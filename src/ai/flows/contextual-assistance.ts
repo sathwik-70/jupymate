@@ -71,7 +71,7 @@ const getTooltipFlow = ai.defineFlow(
 const GetJupiterQuoteInputSchema = z.object({
   inputMint: z.string(),
   outputMint: z.string(),
-  amount: z.number(),
+  amount: z.string(),
   userPublicKey: z.string().optional(),
 });
 export type GetJupiterQuoteInput = z.infer<typeof GetJupiterQuoteInputSchema>;

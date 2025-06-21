@@ -77,12 +77,14 @@ const CrossTokenSwap = () => {
         throw new Error("Invalid token selection");
       }
 
-      const amountInSmallestUnit = Number(amount) * (10 ** fromTokenInfo.decimals);
+      // We use BigInt to ensure that the final amount is a string representation of an integer,
+      // preventing issues with scientific notation for large numbers which the Jupiter API rejects.
+      const amountInLamports = BigInt(Math.floor(Number(amount) * (10 ** fromTokenInfo.decimals)));
 
       const result = await getJupiterQuote({
         inputMint: fromTokenInfo.mint,
         outputMint: toTokenInfo.mint,
-        amount: amountInSmallestUnit,
+        amount: amountInLamports.toString(),
         userPublicKey: publicKey ? publicKey.toBase58() : undefined,
       });
 
