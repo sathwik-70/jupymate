@@ -34,6 +34,13 @@ const tokens: TokenInfo[] = [
 const tokenMap = new Map<string, TokenInfo>(tokens.map(t => [t.id, t]));
 const mintMap = new Map<string, TokenInfo>(tokens.map(t => [t.mint, t]));
 
+interface QuoteDetails {
+  outAmount: string;
+  priceImpact: string;
+  priceImpactValue: number;
+  platformFee: string;
+}
+
 const CrossTokenSwap = () => {
   const [fromToken, setFromToken] = useState('BONK');
   const [toToken, setToToken] = useState('JUP');
@@ -47,6 +54,7 @@ const CrossTokenSwap = () => {
   const { publicKey, sendTransaction } = useWallet();
 
   const [quoteResponse, setQuoteResponse] = useState<any | null>(null);
+  const [quoteDetails, setQuoteDetails] = useState<QuoteDetails | null>(null);
   const [privateKey, setPrivateKey] = useState('');
   const [swapping, setSwapping] = useState(false);
   const [swapTx, setSwapTx] = useState<string | null>(null);
@@ -59,6 +67,7 @@ const CrossTokenSwap = () => {
     setRoute([]);
     setQuoteResponse(null);
     setSwapTx(null);
+    setQuoteDetails(null);
 
     try {
       const fromTokenInfo = tokenMap.get(fromToken);
@@ -88,6 +97,19 @@ const CrossTokenSwap = () => {
       ];
       const routeSymbols = routeMints.map(mint => mintMap.get(mint)?.id || 'UNK');
       setRoute(routeSymbols);
+
+      const outAmount = (Number(result.outAmount) / (10 ** toTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: toTokenInfo.decimals });
+      const priceImpactValue = Number(result.priceImpactPct);
+      const priceImpactPct = (priceImpactValue * 100).toFixed(4);
+      const platformFeeAmount = (Number(result.platformFee.amount) / (10 ** result.platformFee.tokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: result.platformFee.tokenInfo.decimals });
+      const platformFeeString = `${platformFeeAmount} ${result.platformFee.tokenInfo.symbol}`;
+
+      setQuoteDetails({
+        outAmount: `${outAmount} ${toTokenInfo.id}`,
+        priceImpact: `${priceImpactPct}%`,
+        priceImpactValue,
+        platformFee: platformFeeString,
+      });
 
     } catch(e: any) {
        toast({
@@ -273,6 +295,34 @@ const CrossTokenSwap = () => {
                 {!loading && !route.length && <div className="text-center text-muted-foreground animate-fade-in">Click "Visualize Route" to get started.</div>}
             </div>
         </div>
+
+        {quoteDetails && !loading && (
+          <div className="mt-6 animate-fade-in">
+            <h3 className="text-base font-medium text-muted-foreground mb-3">Swap Details</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <span className="text-muted-foreground">Estimated Output</span>
+                <span className="font-semibold text-foreground">{quoteDetails.outAmount}</span>
+              </div>
+              <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <span className="text-muted-foreground">Price Impact</span>
+                <span className={`font-semibold ${
+                    quoteDetails.priceImpactValue < 0.01
+                        ? 'text-green-600 dark:text-green-400'
+                        : quoteDetails.priceImpactValue < 0.03
+                        ? 'text-yellow-500 dark:text-yellow-400'
+                        : 'text-red-500 dark:text-red-400'
+                }`}>
+                    {quoteDetails.priceImpact}
+                </span>
+              </div>
+              <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
+                <span className="text-muted-foreground">Platform Fee</span>
+                <span className="font-semibold text-foreground">{quoteDetails.platformFee}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 border-t pt-6">
             <Tabs defaultValue="wallet" className="w-full">
