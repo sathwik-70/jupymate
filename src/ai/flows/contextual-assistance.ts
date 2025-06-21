@@ -12,6 +12,10 @@
  * - GetJupiterQuoteInput - The input type for the getJupiterQuote function.
  * - GetJupiterQuoteOutput - The return type for the getJupiterQuote function.
  *
+ * - performSwap - A function that executes a token swap on Jupiter.
+ * - PerformSwapInput - The input type for the performSwap function.
+ * - PerformSwapOutput - The return type for the performSwap function.
+ *
  * - askDevAssistant - A function that gets a response from the AI developer assistant.
  * - AskDevAssistantInput - The input type for the askDevAssistant function.
  * - AskDevAssistantOutput - The return type for the askDevAssistant function.
@@ -20,6 +24,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import mcpConfig from '@/config/mcpConfig.json';
+import { Connection, Keypair, VersionedTransaction, clusterApiUrl } from '@solana/web3.js';
+import bs58 from 'bs58';
 
 // Tooltip Flow
 const GetTooltipInputSchema = z.object({
@@ -70,9 +76,7 @@ const GetJupiterQuoteInputSchema = z.object({
 });
 export type GetJupiterQuoteInput = z.infer<typeof GetJupiterQuoteInputSchema>;
 
-const GetJupiterQuoteOutputSchema = z.object({
-  route: z.array(z.string()),
-});
+const GetJupiterQuoteOutputSchema = z.any();
 export type GetJupiterQuoteOutput = z.infer<typeof GetJupiterQuoteOutputSchema>;
 
 export async function getJupiterQuote(input: GetJupiterQuoteInput): Promise<GetJupiterQuoteOutput> {
@@ -100,19 +104,11 @@ const getJupiterQuoteFlow = ai.defineFlow(
       }
       const data = await response.json();
 
-      if (!data || !data.routePlan) {
+      if (!data) {
         throw new Error('Could not find a route for the swap.');
       }
       
-      // The route starts with the input mint, followed by the output mint of each hop in the plan.
-      const routeMints: string[] = [
-        data.inputMint, 
-        ...data.routePlan.map((hop: any) => hop.swapInfo.outputMint)
-      ];
-      
-      return {
-        route: routeMints
-      };
+      return data;
       
     } catch (error: any) {
       console.error('Jupiter quote API error:', error);
@@ -120,6 +116,79 @@ const getJupiterQuoteFlow = ai.defineFlow(
     }
   }
 );
+
+// Perform Swap Flow
+const PerformSwapInputSchema = z.object({
+  userPrivateKey: z.string().describe("The user's private key as a base58 string."),
+  quoteResponse: z.any().describe("The quote response object from the getJupiterQuote flow."),
+});
+export type PerformSwapInput = z.infer<typeof PerformSwapInputSchema>;
+
+const PerformSwapOutputSchema = z.object({
+  transactionId: z.string().describe("The signature of the successful swap transaction."),
+});
+export type PerformSwapOutput = z.infer<typeof PerformSwapOutputSchema>;
+
+export async function performSwap(input: PerformSwapInput): Promise<PerformSwapOutput> {
+  return performSwapFlow(input);
+}
+
+const performSwapFlow = ai.defineFlow(
+  {
+    name: 'performSwapFlow',
+    inputSchema: PerformSwapInputSchema,
+    outputSchema: PerformSwapOutputSchema,
+  },
+  async ({ userPrivateKey, quoteResponse }) => {
+    try {
+      const userKeypair = Keypair.fromSecretKey(bs58.decode(userPrivateKey));
+
+      const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          quoteResponse,
+          userPublicKey: userKeypair.publicKey.toBase58(),
+          wrapAndUnwrapSol: true,
+        }),
+      });
+
+      if (!swapResponse.ok) {
+        const errorData = await swapResponse.json();
+        throw new Error(errorData.error || `Failed to get swap transaction: ${swapResponse.status}`);
+      }
+
+      const { swapTransaction } = await swapResponse.json();
+      const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
+      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+
+      transaction.sign([userKeypair]);
+
+      const connection = new Connection(clusterApiUrl('mainnet-beta'));
+      const rawTransaction = transaction.serialize();
+      
+      const txid = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+        maxRetries: 2,
+      });
+
+      const confirmation = await connection.confirmTransaction(txid, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed: ${confirmation.value.err}`);
+      }
+
+      return { transactionId: txid };
+
+    } catch (error: any) {
+      console.error('Swap execution error:', error);
+      throw new Error(error.message || 'Failed to execute swap.');
+    }
+  }
+);
+
 
 // Dev Assistant Flow
 const AskDevAssistantInputSchema = z.object({
