@@ -1,0 +1,45 @@
+{
+  "name": "Jupymate MCP",
+  "version": "1.0.0",
+  "description": "Master Control Program configuration for Jupymate, defining Jupiter API interactions for AI-assisted development.",
+  "apis": {
+    "quote": {
+      "endpoint": "GET https://lite-api.jup.ag/swap/v1/quote",
+      "description": "Provides real-time swap rates and route plans from Jupiter's aggregator.",
+      "params": {
+        "inputMint": "The token mint address for the input token.",
+        "outputMint": "The token mint address for the output token.",
+        "amount": "The amount of input token to swap, in its smallest unit (lamports).",
+        "slippageBps": "The allowed slippage in basis points (e.g., 50 for 0.5%)."
+      },
+      "response": "A quote object containing amounts, price impact, and potential routes."
+    },
+    "swap": {
+      "endpoint": "POST https://lite-api.jup.ag/swap/v1/swap",
+      "description": "Generates an unsigned swap transaction based on a provided quote.",
+      "body": {
+        "userPublicKey": "The user's Solana wallet public key.",
+        "quoteResponse": "The full response object from the Quote API.",
+        "wrapAndUnwrapSol": "Boolean to automatically wrap/unwrap SOL if needed."
+      },
+      "response": "A serialized, base64-encoded transaction string to be signed and sent."
+    },
+    "swapInstructions": {
+      "endpoint": "POST https://lite-api.jup.ag/swap/v1/swap-instructions",
+      "description": "Fetches only the swap instruction objects for custom transaction composition.",
+      "body": {
+        "userPublicKey": "The user's Solana wallet public key.",
+        "quoteResponse": "The full response object from the Quote API."
+      },
+      "response": "An object containing setup, swap, and cleanup instructions."
+    },
+    "programIds": {
+      "endpoint": "GET https://lite-api.jup.ag/swap/v1/program-id-to-label",
+      "description": "Maps on-chain program IDs to their corresponding DEX or protocol labels.",
+      "response": "A JSON object where keys are program IDs and values are human-readable labels."
+    }
+  },
+  "security": {
+    "shieldApi": "Integrated via Jupiter's backend to validate token safety and prevent swaps with malicious or risky tokens."
+  }
+}

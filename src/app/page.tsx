@@ -1,3 +1,41 @@
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import ApiEndpoints from '@/components/features/api-endpoints';
+import SupportedWallets from '@/components/features/supported-wallets';
+import EcosystemTools from '@/components/features/ecosystem-tools';
+import GovernanceAnalytics from '@/components/features/governance-analytics';
+import CrossTokenSwap from '@/components/features/cross-token-swap';
+import McpConfigViewer from '@/components/features/mcp-config-viewer';
+
 export default function Home() {
-  return <></>;
+  return (
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <Header />
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold font-headline text-foreground tracking-tight">
+            Jupymate Navigator
+          </h1>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+            A developer's compass for the Jupiverse. Explore APIs, visualize swaps, and get AI-powered insights for building on Jupiter.
+          </p>
+        </div>
+
+        <div className="grid gap-8">
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
+            <CrossTokenSwap />
+            <McpConfigViewer />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <ApiEndpoints />
+            <SupportedWallets />
+            <EcosystemTools />
+            <GovernanceAnalytics />
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
 }
