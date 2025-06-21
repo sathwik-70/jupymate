@@ -3,16 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Rocket } from 'lucide-react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import React, { useEffect, useState } from 'react';
-
-const WalletMultiButton = dynamic(
-  () =>
-    import('@solana/wallet-adapter-react-ui').then(
-      (mod) => mod.WalletMultiButton
-    ),
-  { ssr: false }
-);
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import React, { useState, useEffect } from 'react';
 
 const Header = () => {
   const [isMounted, setIsMounted] = useState(false);

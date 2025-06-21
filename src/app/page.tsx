@@ -1,4 +1,3 @@
-import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import ApiEndpoints from '@/components/features/api-endpoints';
 import SupportedWallets from '@/components/features/supported-wallets';
@@ -6,6 +5,7 @@ import EcosystemTools from '@/components/features/ecosystem-tools';
 import GovernanceAnalytics from '@/components/features/governance-analytics';
 import CrossTokenSwap from '@/components/features/cross-token-swap';
 import McpConfigViewer from '@/components/features/mcp-config-viewer';
+import Header from '@/components/layout/header';
 
 export default function Home() {
   return (
