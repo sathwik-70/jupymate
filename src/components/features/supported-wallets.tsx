@@ -23,7 +23,7 @@ const SupportedWallets = () => {
               alt={`${wallet.name} logo`}
               width={40}
               height={40}
-              className="rounded-lg bg-muted p-1"
+              className="rounded-full bg-muted p-1"
             />
             <span className="text-xs font-medium text-foreground">{wallet.name}</span>
           </div>
