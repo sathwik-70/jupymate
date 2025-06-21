@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowRight, Key, Loader2, Repeat, Wallet } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
+import SwapBreakdownChart from './swap-breakdown-chart';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { VersionedTransaction } from '@solana/web3.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -77,8 +78,6 @@ const CrossTokenSwap = () => {
         throw new Error("Invalid token selection");
       }
 
-      // We use BigInt to ensure that the final amount is a string representation of an integer,
-      // preventing issues with scientific notation for large numbers which the Jupiter API rejects.
       const amountInLamports = BigInt(Math.floor(Number(amount) * (10 ** fromTokenInfo.decimals)));
 
       const result = await getJupiterQuote({
@@ -106,9 +105,9 @@ const CrossTokenSwap = () => {
       
       let platformFeeString = "No Fee";
       if (result.platformFee && result.platformFee.amount && Number(result.platformFee.amount) > 0) {
-        const feeTokenInfo = result.platformFee.tokenInfo;
+        const feeTokenInfo = mintMap.get(result.platformFee.mint) || { decimals: 6, id: 'UNK' };
         const platformFeeAmount = (Number(result.platformFee.amount) / (10 ** feeTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: feeTokenInfo.decimals });
-        platformFeeString = `${platformFeeAmount} ${feeTokenInfo.symbol}`;
+        platformFeeString = `${platformFeeAmount} ${feeTokenInfo.id}`;
       }
 
       setQuoteDetails({
@@ -261,7 +260,7 @@ const CrossTokenSwap = () => {
                             <SelectValue placeholder="Select token" />
                         </SelectTrigger>
                         <SelectContent>
-                            {tokens.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                            {tokens.map(t => <SelectItem key={t.id} value={t.id} disabled={t.id === toToken}>{t.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -277,7 +276,7 @@ const CrossTokenSwap = () => {
                             <SelectValue placeholder="Select token" />
                         </SelectTrigger>
                         <SelectContent>
-                             {tokens.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                             {tokens.map(t => <SelectItem key={t.id} value={t.id} disabled={t.id === fromToken}>{t.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -288,7 +287,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto">
+            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken} className="w-full sm:w-auto">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>
@@ -328,6 +327,8 @@ const CrossTokenSwap = () => {
                 <span className="font-semibold text-foreground">{quoteDetails.platformFee}</span>
               </div>
             </div>
+
+            {quoteResponse && <SwapBreakdownChart quoteResponse={quoteResponse} />}
           </div>
         )}
 
