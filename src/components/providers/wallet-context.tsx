@@ -20,7 +20,7 @@ export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children })
     const network = WalletAdapterNetwork.Mainnet;
 
     // You can also provide a custom RPC endpoint.
-    const endpoint = 'https://jupiter.rpc.solana.com';
+    const endpoint = 'https://rpc.ankr.com/solana';
 
     const wallets = useMemo(
         () => [
