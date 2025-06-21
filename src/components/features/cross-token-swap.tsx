@@ -76,12 +76,17 @@ const CrossTokenSwap = () => {
       }
       setQuoteResponse(result);
 
-      // Correctly extract route from marketInfos for v6 API
-      const routeMints: string[] = [
-        result.inputMint,
-        ...result.marketInfos.map((market: any) => market.outputMint)
-      ];
-      const routeSymbols = routeMints.map(mint => mintMap.get(mint)?.id || 'UNK');
+      // Correctly extract route from routePlan for v6 API
+      let routeSymbols: string[] = [];
+      if (result.routePlan && result.routePlan.length > 0) {
+          const routeMints = [result.inputMint, ...result.routePlan.map((leg: any) => leg.swapInfo.outputMint)];
+          routeSymbols = routeMints.map(mint => mintMap.get(mint)?.id || 'UNK');
+      } else {
+        // Direct swap or same-token swap, visualize as From -> To
+        const fromSymbol = mintMap.get(result.inputMint)?.id || 'UNK';
+        const toSymbol = mintMap.get(result.outputMint)?.id || 'UNK';
+        routeSymbols = [fromSymbol, toSymbol];
+      }
       setRoute(routeSymbols);
 
       const outAmount = (Number(result.outAmount) / (10 ** toTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: toTokenInfo.decimals });
@@ -250,7 +255,7 @@ const CrossTokenSwap = () => {
                     </Select>
                 </div>
                 
-                <Button variant="ghost" size="icon" onClick={handleSwapDirection} className="hidden sm:flex" disabled={loading || swapping || fromToken === toToken}>
+                <Button variant="ghost" size="icon" onClick={handleSwapDirection} className="hidden sm:flex" disabled={loading || swapping}>
                     <Repeat className="w-4 h-4 text-muted-foreground" />
                 </Button>
 
@@ -272,7 +277,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken} className="w-full sm:w-auto">
+            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>
