@@ -103,8 +103,13 @@ const CrossTokenSwap = () => {
       const outAmount = (Number(result.outAmount) / (10 ** toTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: toTokenInfo.decimals });
       const priceImpactValue = Number(result.priceImpactPct);
       const priceImpactPct = (priceImpactValue * 100).toFixed(4);
-      const platformFeeAmount = (Number(result.platformFee.amount) / (10 ** result.platformFee.tokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: result.platformFee.tokenInfo.decimals });
-      const platformFeeString = `${platformFeeAmount} ${result.platformFee.tokenInfo.symbol}`;
+      
+      let platformFeeString = "No Fee";
+      if (result.platformFee && result.platformFee.amount && Number(result.platformFee.amount) > 0) {
+        const feeTokenInfo = result.platformFee.tokenInfo;
+        const platformFeeAmount = (Number(result.platformFee.amount) / (10 ** feeTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: feeTokenInfo.decimals });
+        platformFeeString = `${platformFeeAmount} ${feeTokenInfo.symbol}`;
+      }
 
       setQuoteDetails({
         outAmount: `${outAmount} ${toTokenInfo.id}`,
@@ -387,3 +392,5 @@ const CrossTokenSwap = () => {
 
 export default CrossTokenSwap;
  
+
+    
