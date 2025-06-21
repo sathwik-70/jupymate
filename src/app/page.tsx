@@ -8,7 +8,6 @@ import CrossTokenSwap from '@/components/features/cross-token-swap';
 import McpConfigViewer from '@/components/features/mcp-config-viewer';
 import PortfolioAnalyzer from '@/components/features/portfolio-analyzer';
 import Header from '@/components/layout/header';
-import dynamic from 'next/dynamic';
 
 
 export default function Home() {

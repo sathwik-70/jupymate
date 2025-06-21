@@ -38,14 +38,11 @@ export async function analyzePortfolio(input: AnalyzePortfolioInput): Promise<An
   return analyzePortfolioFlow(input);
 }
 
-const analyzePortfolioFlow = ai.defineFlow(
-  {
-    name: 'analyzePortfolioFlow',
-    inputSchema: AnalyzePortfolioInputSchema,
-    outputSchema: AnalyzePortfolioOutputSchema,
-  },
-  async (input) => {
-    const prompt = `You are a witty, slightly sarcastic Solana ecosystem expert. Your job is to analyze a user's token portfolio and classify them as a 'Degen', 'Normie', or 'Investor' based on the token types they hold.
+const portfolioAnalysisPrompt = ai.definePrompt({
+  name: 'portfolioAnalysisPrompt',
+  input: { schema: AnalyzePortfolioInputSchema },
+  output: { schema: AnalyzePortfolioOutputSchema },
+  prompt: `You are a witty, slightly sarcastic Solana ecosystem expert. Your job is to analyze a user's token portfolio and classify them as a 'Degen', 'Normie', or 'Investor' based on the token types they hold.
 
 Here are the classification rules:
 - **Investor**: Portfolio is heavily weighted towards 'blue-chip' (like SOL) and 'stablecoin' (like USDC) tokens. They are playing the long game.
@@ -58,15 +55,17 @@ Portfolio:
 {{#each tokens}}
 - {{symbol}}: {{balance}} (Type: {{type}})
 {{/each}}
-`;
+`,
+});
 
-    const { output } = await ai.definePrompt({
-      name: 'portfolioAnalysisPrompt',
-      input: { schema: AnalyzePortfolioInputSchema },
-      output: { schema: AnalyzePortfolioOutputSchema },
-      prompt,
-    })(input);
-
+const analyzePortfolioFlow = ai.defineFlow(
+  {
+    name: 'analyzePortfolioFlow',
+    inputSchema: AnalyzePortfolioInputSchema,
+    outputSchema: AnalyzePortfolioOutputSchema,
+  },
+  async (input) => {
+    const { output } = await portfolioAnalysisPrompt(input);
     return output!;
   }
 );
