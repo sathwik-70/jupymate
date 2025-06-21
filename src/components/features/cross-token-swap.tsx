@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, Loader2, Repeat } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 interface TokenInfo {
   id: string;
@@ -36,6 +37,7 @@ const CrossTokenSwap = () => {
   const [key, setKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { publicKey } = useWallet();
 
   const handleVisualize = async () => {
     if (!fromToken || !toToken || !amount || fromToken === toToken) return;
@@ -57,6 +59,7 @@ const CrossTokenSwap = () => {
         inputMint: fromTokenInfo.mint,
         outputMint: toTokenInfo.mint,
         amount: amountInSmallestUnit,
+        userPublicKey: publicKey ? publicKey.toBase58() : undefined,
       });
 
       const routeSymbols = result.route.map(mint => mintMap.get(mint)?.id || 'UNK');

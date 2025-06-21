@@ -1,6 +1,9 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Rocket } from 'lucide-react';
 import Link from 'next/link';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 const Header = () => {
   return (
@@ -12,11 +15,14 @@ const Header = () => {
           </div>
           <h1 className="text-2xl font-bold font-headline text-foreground">Jupymate Navigator</h1>
         </Link>
-        <Button asChild>
-          <a href="https://dev.jup.ag/docs/api" target="_blank" rel="noopener noreferrer">
-            View Documentation
-          </a>
-        </Button>
+        <div className="flex items-center gap-4">
+            <Button asChild variant="outline">
+                <a href="https://docs.jup.ag/" target="_blank" rel="noopener noreferrer">
+                    View Docs
+                </a>
+            </Button>
+            <WalletMultiButton />
+        </div>
       </div>
     </header>
   );

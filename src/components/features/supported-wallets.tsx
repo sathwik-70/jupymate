@@ -5,10 +5,7 @@ import Image from 'next/image';
 const wallets = [
   { name: 'Phantom', icon: 'https://placehold.co/48x48.png', hint: 'ghost' },
   { name: 'Solflare', icon: 'https://placehold.co/48x48.png', hint: 'sun fire' },
-  { name: 'Glow', icon: 'https://placehold.co/48x48.png', hint: 'glowing orb' },
   { name: 'Backpack', icon: 'https://placehold.co/48x48.png', hint: 'backpack' },
-  { name: 'Ledger', icon: 'https://placehold.co/48x48.png', hint: 'usb drive' },
-  { name: 'MobileConnect', icon: 'https://placehold.co/48x48.png', hint: 'phone qr' },
 ];
 
 const SupportedWallets = () => {

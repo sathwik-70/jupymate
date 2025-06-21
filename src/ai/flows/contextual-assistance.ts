@@ -66,6 +66,7 @@ const GetJupiterQuoteInputSchema = z.object({
   inputMint: z.string(),
   outputMint: z.string(),
   amount: z.number(),
+  userPublicKey: z.string().optional(),
 });
 export type GetJupiterQuoteInput = z.infer<typeof GetJupiterQuoteInputSchema>;
 
@@ -84,8 +85,12 @@ const getJupiterQuoteFlow = ai.defineFlow(
     inputSchema: GetJupiterQuoteInputSchema,
     outputSchema: GetJupiterQuoteOutputSchema,
   },
-  async ({ inputMint, outputMint, amount }) => {
-    const url = `https://quote-api.jup.ag/v4/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippage=0.5`;
+  async ({ inputMint, outputMint, amount, userPublicKey }) => {
+    // Using v6 of the Jupiter API for better routes and features.
+    let url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=50`;
+    if (userPublicKey) {
+      url += `&userPublicKey=${userPublicKey}`;
+    }
 
     try {
       const response = await fetch(url);
@@ -95,20 +100,15 @@ const getJupiterQuoteFlow = ai.defineFlow(
       }
       const data = await response.json();
 
-      if (!data.data || data.data.length === 0) {
-        throw new Error('No route found for this swap.');
+      if (!data || !data.routePlan) {
+        throw new Error('Could not find a route for the swap.');
       }
       
-      const routeInfo = data.data[0];
-      const marketInfos = routeInfo.marketInfos;
-      
-      const routeMints: string[] = [];
-      if (marketInfos.length > 0) {
-        routeMints.push(marketInfos[0].inputMint);
-        marketInfos.forEach((info: any) => {
-          routeMints.push(info.outputMint);
-        });
-      }
+      // The route starts with the input mint, followed by the output mint of each hop in the plan.
+      const routeMints: string[] = [
+        data.inputMint, 
+        ...data.routePlan.map((hop: any) => hop.swapInfo.outputMint)
+      ];
       
       return {
         route: routeMints
