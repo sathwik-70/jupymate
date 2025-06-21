@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -9,9 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowRight, Key, Loader2, Repeat } from 'lucide-react';
+import { ArrowRight, Key, Loader2, Repeat, Wallet } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { VersionedTransaction } from '@solana/web3.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 interface TokenInfo {
   id: string;
@@ -38,7 +42,9 @@ const CrossTokenSwap = () => {
   const [key, setKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { publicKey } = useWallet();
+  
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
 
   const [quoteResponse, setQuoteResponse] = useState<any | null>(null);
   const [privateKey, setPrivateKey] = useState('');
@@ -95,13 +101,13 @@ const CrossTokenSwap = () => {
     }
   };
   
-  const handleSwap = () => {
+  const handleSwapDirection = () => {
       const currentFrom = fromToken;
       setFromToken(toToken);
       setToToken(currentFrom);
   }
 
-  const handlePerformSwap = async () => {
+  const handlePerformSwapWithApiKey = async () => {
     if (!privateKey || !quoteResponse) {
         toast({
             variant: "destructive",
@@ -141,6 +147,69 @@ const CrossTokenSwap = () => {
     }
   }
 
+  const handlePerformSwapWithWallet = async () => {
+    if (!publicKey || !quoteResponse || !sendTransaction) {
+        toast({
+            variant: "destructive",
+            title: "Wallet Not Ready",
+            description: "Please connect your wallet and visualize a route to execute a swap.",
+        });
+        return;
+    }
+
+    setSwapping(true);
+    setSwapTx(null);
+
+    try {
+        // Get swap transaction from Jupiter API
+        const swapUrl = 'https://quote-api.jup.ag/v6/swap';
+        const swapResponse = await fetch(swapUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                quoteResponse,
+                userPublicKey: publicKey.toBase58(),
+                wrapAndUnwrapSol: true,
+            })
+        });
+
+        if (!swapResponse.ok) {
+          const errorData = await swapResponse.json();
+          throw new Error(errorData.error || `Failed to get swap transaction: ${swapResponse.status}`);
+        }
+
+        const { swapTransaction } = await swapResponse.json();
+        
+        const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
+        const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+
+        const txid = await sendTransaction(transaction, connection);
+
+        const confirmation = await connection.confirmTransaction(txid, 'confirmed');
+        if (confirmation.value.err) {
+            throw new Error(`Transaction failed: ${confirmation.value.err}`);
+        }
+
+        setSwapTx(txid);
+        toast({
+            title: "Swap Successful!",
+            description: (
+                <p>
+                    Transaction ID: <a href={`https://solscan.io/tx/${txid}`} target="_blank" rel="noopener noreferrer" className="underline">{txid.slice(0, 10)}...</a>
+                </p>
+            ),
+        });
+
+    } catch (e: any) {
+        toast({
+            variant: "destructive",
+            title: "Swap Failed",
+            description: e.message || "An error occurred during the swap.",
+        });
+    } finally {
+        setSwapping(false);
+    }
+  }
 
   return (
     <Card className="h-full flex flex-col">
@@ -150,7 +219,7 @@ const CrossTokenSwap = () => {
             Cross-Token Swap
         </CardTitle>
         <CardDescription>
-          Visualize a swap route or execute it directly using a private key.
+          Visualize and execute token swaps on Solana using the Jupiter API.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
@@ -168,7 +237,7 @@ const CrossTokenSwap = () => {
                     </Select>
                 </div>
                 
-                <Button variant="ghost" size="icon" onClick={handleSwap} className="hidden sm:flex" disabled={loading || swapping}>
+                <Button variant="ghost" size="icon" onClick={handleSwapDirection} className="hidden sm:flex" disabled={loading || swapping}>
                     <Repeat className="w-4 h-4 text-muted-foreground" />
                 </Button>
 
@@ -190,7 +259,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken}>
+            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken} className="w-full sm:w-auto">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>
@@ -205,35 +274,56 @@ const CrossTokenSwap = () => {
             </div>
         </div>
 
-        <div className="mt-6 space-y-4 border-t pt-6">
-            <div className="grid gap-2">
-                <Label htmlFor="privateKey">API Key (Base58 Private Key)</Label>
-                <Input 
-                    id="privateKey" 
-                    type="password" 
-                    value={privateKey} 
-                    onChange={(e) => setPrivateKey(e.target.value)}
-                    placeholder="Enter your wallet's private key to swap"
-                    disabled={loading || swapping}
-                />
-            </div>
-            <Alert variant="destructive">
-              <Key className="h-4 w-4" />
-              <AlertTitle>Security Warning</AlertTitle>
-              <AlertDescription>
-                Never share your private key with a site you don't trust. This feature is for demonstration purposes only. Always use a burner wallet.
-              </AlertDescription>
-            </Alert>
-            <Button 
-                onClick={handlePerformSwap} 
-                disabled={loading || swapping || !quoteResponse || !privateKey.trim()}
-                className="w-full"
-            >
-                {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Repeat className="mr-2 h-4 w-4" />}
-                {swapping ? 'Executing Swap...' : 'Execute Swap'}
-            </Button>
-            {swapTx && (
-                <div className="text-center text-sm text-green-600 dark:text-green-400 font-medium animate-fade-in">
+        <div className="mt-6 border-t pt-6">
+            <Tabs defaultValue="wallet" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="wallet">Wallet Swap</TabsTrigger>
+                    <TabsTrigger value="apikey">API Key Swap</TabsTrigger>
+                </TabsList>
+                <TabsContent value="wallet" className="mt-4 space-y-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                        Execute the swap securely using your connected wallet.
+                    </p>
+                    <Button 
+                        onClick={handlePerformSwapWithWallet} 
+                        disabled={loading || swapping || !quoteResponse || !publicKey}
+                        className="w-full"
+                    >
+                        {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}
+                        {swapping ? 'Executing Swap...' : `Execute with Wallet`}
+                    </Button>
+                </TabsContent>
+                <TabsContent value="apikey" className="mt-4 space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="privateKey">API Key (Base58 Private Key)</Label>
+                        <Input 
+                            id="privateKey" 
+                            type="password" 
+                            value={privateKey} 
+                            onChange={(e) => setPrivateKey(e.target.value)}
+                            placeholder="Enter a burner wallet's private key"
+                            disabled={loading || swapping}
+                        />
+                    </div>
+                    <Alert variant="destructive">
+                      <Key className="h-4 w-4" />
+                      <AlertTitle>Security Warning</AlertTitle>
+                      <AlertDescription>
+                        Never share your private key with a site you don't trust. This is for development purposes only.
+                      </AlertDescription>
+                    </Alert>
+                    <Button 
+                        onClick={handlePerformSwapWithApiKey} 
+                        disabled={loading || swapping || !quoteResponse || !privateKey.trim()}
+                        className="w-full"
+                    >
+                        {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Key className="mr-2 h-4 w-4" />}
+                        {swapping ? 'Executing Swap...' : 'Execute with API Key'}
+                    </Button>
+                </TabsContent>
+            </Tabs>
+             {swapTx && (
+                <div className="mt-4 text-center text-sm text-green-600 dark:text-green-400 font-medium animate-fade-in">
                     <p>Swap successful! <a href={`https://solscan.io/tx/${swapTx}`} target="_blank" rel="noopener noreferrer" className="font-medium underline">View on Solscan</a></p>
                 </div>
             )}
@@ -244,3 +334,4 @@ const CrossTokenSwap = () => {
 };
 
 export default CrossTokenSwap;
+ 
