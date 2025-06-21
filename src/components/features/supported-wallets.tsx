@@ -21,9 +21,9 @@ const SupportedWallets = () => {
             <Image
               src={wallet.icon}
               alt={`${wallet.name} logo`}
-              width={40}
-              height={40}
-              className="rounded-full bg-muted p-1"
+              width={48}
+              height={48}
+              className="rounded-full bg-background p-2 border"
             />
             <span className="text-xs font-medium text-foreground">{wallet.name}</span>
           </div>
