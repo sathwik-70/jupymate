@@ -16,24 +16,8 @@ import SwapBreakdownChart from './swap-breakdown-chart';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { VersionedTransaction } from '@solana/web3.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { tokens, tokenMap, mintMap, type TokenInfo } from '@/config/tokens';
 
-
-interface TokenInfo {
-  id: string;
-  name: string;
-  mint: string;
-  decimals: number;
-}
-
-const tokens: TokenInfo[] = [
-  { id: 'SOL', name: 'Solana', mint: 'So11111111111111111111111111111111111111112', decimals: 9 },
-  { id: 'USDC', name: 'USD Coin', mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', decimals: 6 },
-  { id: 'JUP', name: 'Jupiter', mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', decimals: 6 },
-  { id: 'BONK', name: 'Bonk', mint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263', decimals: 5 },
-  { id: 'WIF', name: 'dogwifhat', mint: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7gmAJsCn7V', decimals: 6 },
-];
-const tokenMap = new Map<string, TokenInfo>(tokens.map(t => [t.id, t]));
-const mintMap = new Map<string, TokenInfo>(tokens.map(t => [t.mint, t]));
 
 interface QuoteDetails {
   outAmount: string;
@@ -266,7 +250,7 @@ const CrossTokenSwap = () => {
                     </Select>
                 </div>
                 
-                <Button variant="ghost" size="icon" onClick={handleSwapDirection} className="hidden sm:flex" disabled={loading || swapping}>
+                <Button variant="ghost" size="icon" onClick={handleSwapDirection} className="hidden sm:flex" disabled={loading || swapping || fromToken === toToken}>
                     <Repeat className="w-4 h-4 text-muted-foreground" />
                 </Button>
 
@@ -288,7 +272,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto">
+            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken} className="w-full sm:w-auto">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>

@@ -1,3 +1,4 @@
+
 import Footer from '@/components/layout/footer';
 import ApiEndpoints from '@/components/features/api-endpoints';
 import SupportedWallets from '@/components/features/supported-wallets';
@@ -5,7 +6,10 @@ import EcosystemTools from '@/components/features/ecosystem-tools';
 import GovernanceAnalytics from '@/components/features/governance-analytics';
 import CrossTokenSwap from '@/components/features/cross-token-swap';
 import McpConfigViewer from '@/components/features/mcp-config-viewer';
+import PortfolioAnalyzer from '@/components/features/portfolio-analyzer';
 import Header from '@/components/layout/header';
+import dynamic from 'next/dynamic';
+
 
 export default function Home() {
   return (
@@ -27,7 +31,11 @@ export default function Home() {
             <McpConfigViewer />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="mt-8">
+            <PortfolioAnalyzer />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
             <ApiEndpoints />
             <SupportedWallets />
             <EcosystemTools />
