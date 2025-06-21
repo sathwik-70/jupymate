@@ -61,7 +61,7 @@ const CrossTokenSwap = () => {
 
 
   const handleVisualize = async () => {
-    if (!fromToken || !toToken || !amount || fromToken === toToken) return;
+    if (!fromToken || !toToken || !amount) return;
 
     setLoading(true);
     setRoute([]);
@@ -288,7 +288,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken} className="w-full sm:w-auto">
+            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>
