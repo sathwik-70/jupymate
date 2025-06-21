@@ -14,6 +14,7 @@ import { ArrowRight, Key, Loader2, Repeat, Wallet } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
 import SwapBreakdownChart from './swap-breakdown-chart';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { WalletSendTransactionError } from '@solana/wallet-adapter-base';
 import { VersionedTransaction } from '@solana/web3.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { tokens, tokenMap, mintMap, type TokenInfo } from '@/config/tokens';
@@ -79,7 +80,7 @@ const CrossTokenSwap = () => {
       // Correctly extract route from routePlan for v6 API
       let routeSymbols: string[] = [];
       if (result.routePlan && result.routePlan.length > 0) {
-          const routeMints = [result.inputMint, ...result.routePlan.map((leg: any) => leg.swapInfo.outputMint)];
+          const routeMints = [result.inputMint, ...result.routePlan.flatMap((leg: any) => leg.swapInfo.outputMint ? [leg.swapInfo.outputMint] : [])];
           routeSymbols = routeMints.map(mint => mintMap.get(mint)?.id || 'UNK');
       } else {
         // Direct swap or same-token swap, visualize as From -> To
@@ -219,11 +220,19 @@ const CrossTokenSwap = () => {
         });
 
     } catch (e: any) {
-        toast({
-            variant: "destructive",
-            title: "Swap Failed",
-            description: e.message || "An error occurred during the swap.",
-        });
+        if (e instanceof WalletSendTransactionError && e.message.includes('User rejected the request')) {
+            toast({
+                variant: "destructive",
+                title: "Swap Cancelled",
+                description: "You rejected the transaction in your wallet.",
+            });
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Swap Failed",
+                description: e.message || "An error occurred during the swap.",
+            });
+        }
     } finally {
         setSwapping(false);
     }
