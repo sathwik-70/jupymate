@@ -3,9 +3,9 @@ import { Wallet } from 'lucide-react';
 import Image from 'next/image';
 
 const wallets = [
-  { name: 'Phantom', icon: 'https://placehold.co/48x48.png', hint: 'ghost' },
-  { name: 'Solflare', icon: 'https://placehold.co/48x48.png', hint: 'sun fire' },
-  { name: 'Backpack', icon: 'https://placehold.co/48x48.png', hint: 'backpack' },
+  { name: 'Phantom', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/phantom.svg' },
+  { name: 'Solflare', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/solflare.svg' },
+  { name: 'Backpack', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/backpack.svg' },
 ];
 
 const SupportedWallets = () => {
@@ -23,8 +23,7 @@ const SupportedWallets = () => {
               alt={`${wallet.name} logo`}
               width={40}
               height={40}
-              className="rounded-full bg-muted"
-              data-ai-hint={wallet.hint}
+              className="rounded-lg bg-muted p-1"
             />
             <span className="text-xs font-medium text-foreground">{wallet.name}</span>
           </div>
