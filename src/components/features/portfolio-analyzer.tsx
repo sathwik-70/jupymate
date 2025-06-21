@@ -10,8 +10,21 @@ import { mintMap } from '@/config/tokens';
 import InfoCard from '@/components/shared/info-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { HeartPulse, Loader2 } from 'lucide-react';
+import { HeartPulse, Loader2, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+
+const SafetyIcon = ({ status }: { status: 'Verified' | 'Community' | 'Unknown' }) => {
+  switch (status) {
+    case 'Verified':
+      return <ShieldCheck className="w-4 h-4 text-green-500" />;
+    case 'Community':
+      return <ShieldAlert className="w-4 h-4 text-yellow-500" />;
+    case 'Unknown':
+      return <Shield className="w-4 h-4 text-gray-500" />;
+    default:
+      return null;
+  }
+};
 
 const PortfolioAnalyzer = () => {
   const { connection } = useConnection();
@@ -20,7 +33,6 @@ const PortfolioAnalyzer = () => {
 
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalyzePortfolioOutput | null>(null);
-  const [analyzedTokens, setAnalyzedTokens] = useState<AnalyzePortfolioInput['tokens']>([]);
 
   const handleAnalyze = async () => {
     if (!publicKey) {
@@ -34,7 +46,6 @@ const PortfolioAnalyzer = () => {
 
     setLoading(true);
     setAnalysisResult(null);
-    setAnalyzedTokens([]);
 
     try {
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
@@ -50,6 +61,7 @@ const PortfolioAnalyzer = () => {
               symbol: tokenInfo.id,
               balance: info.tokenAmount.uiAmount,
               type: tokenInfo.type,
+              mint: info.mint,
             };
           }
           return null;
@@ -65,7 +77,6 @@ const PortfolioAnalyzer = () => {
         return;
       }
       
-      setAnalyzedTokens(knownTokenAccounts);
       const result = await analyzePortfolio({ tokens: knownTokenAccounts });
       setAnalysisResult(result);
 
@@ -96,7 +107,7 @@ const PortfolioAnalyzer = () => {
     <InfoCard
       title="AI Portfolio Analyzer"
       icon={HeartPulse}
-      description="Connect your wallet and get a witty, AI-powered vibe check on your token portfolio."
+      description="Connect your wallet for an AI-powered vibe check and token safety analysis."
     >
       <div className="space-y-4">
         {!analysisResult && (
@@ -120,14 +131,21 @@ const PortfolioAnalyzer = () => {
               "{analysisResult.reasoning}"
             </blockquote>
             <div>
-              <h4 className="font-semibold text-foreground mb-2">Analyzed Tokens:</h4>
-              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                {analyzedTokens.map(token => (
-                  <li key={token.symbol}>
-                    <span className="font-semibold text-foreground">{token.symbol}:</span> {token.balance.toLocaleString()}
+              <h4 className="font-semibold text-foreground mb-2">Analyzed Tokens & Safety:</h4>
+              <ul className="text-sm space-y-2">
+                {analysisResult.tokenSafety.map(token => (
+                  <li key={token.symbol} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <SafetyIcon status={token.status} />
+                      <span className="font-semibold text-foreground">{token.symbol}</span>
+                    </div>
+                    <span className="text-muted-foreground">{token.status}</span>
                   </li>
                 ))}
               </ul>
+              <div className="text-xs text-muted-foreground mt-3 pt-3 border-t border-dashed">
+                Safety is based on Jupiter's strict and community token lists. 'Verified' is the highest trust level.
+              </div>
             </div>
           </div>
         )}
