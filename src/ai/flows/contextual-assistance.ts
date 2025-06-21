@@ -24,7 +24,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import mcpConfig from '@/config/mcpConfig.json';
-import { Connection, Keypair, VersionedTransaction, clusterApiUrl } from '@solana/web3.js';
+import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
 import bs58 from 'bs58';
 
 // Tooltip Flow
@@ -166,7 +166,7 @@ const performSwapFlow = ai.defineFlow(
 
       transaction.sign([userKeypair]);
 
-      const connection = new Connection(clusterApiUrl('mainnet-beta'));
+      const connection = new Connection('https://jupiter.rpc.solana.com');
       const rawTransaction = transaction.serialize();
       
       const txid = await connection.sendRawTransaction(rawTransaction, {
