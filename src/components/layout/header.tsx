@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Rocket } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const WalletMultiButton = dynamic(
   () =>
@@ -15,12 +15,6 @@ const WalletMultiButton = dynamic(
 );
 
 const Header = () => {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   return (
     <header className="container mx-auto px-4 py-4 border-b">
       <div className="flex justify-between items-center">
@@ -36,7 +30,7 @@ const Header = () => {
                     View Docs
                 </a>
             </Button>
-            {isMounted && <WalletMultiButton />}
+            <WalletMultiButton />
         </div>
       </div>
     </header>
