@@ -20,9 +20,9 @@ const SwapBreakdownChart = ({ quoteResponse }: SwapBreakdownChartProps) => {
     const chartData = [
         { name: 'Price Impact', value: priceImpactPct },
         { name: 'Liquidity Fees', value: totalLpFeePct },
-    ].filter(item => item.value > 0);
+    ];
 
-    if (chartData.length === 0) {
+    if (chartData.every(item => item.value === 0)) {
         return null;
     }
     

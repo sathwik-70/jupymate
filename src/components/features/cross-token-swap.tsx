@@ -87,14 +87,15 @@ const CrossTokenSwap = () => {
         userPublicKey: publicKey ? publicKey.toBase58() : undefined,
       });
 
-      if (!result || !result.routePlan) {
+      if (!result || !result.outAmount) {
         throw new Error('Could not find a route for the swap.');
       }
       setQuoteResponse(result);
 
+      // Correctly extract route from marketInfos for v6 API
       const routeMints: string[] = [
         result.inputMint,
-        ...result.routePlan.map((hop: any) => hop.swapInfo.outputMint)
+        ...result.marketInfos.map((market: any) => market.outputMint)
       ];
       const routeSymbols = routeMints.map(mint => mintMap.get(mint)?.id || 'UNK');
       setRoute(routeSymbols);
