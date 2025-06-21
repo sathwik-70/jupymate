@@ -260,7 +260,7 @@ const CrossTokenSwap = () => {
                             <SelectValue placeholder="Select token" />
                         </SelectTrigger>
                         <SelectContent>
-                            {tokens.map(t => <SelectItem key={t.id} value={t.id} disabled={t.id === toToken}>{t.name}</SelectItem>)}
+                            {tokens.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -276,7 +276,7 @@ const CrossTokenSwap = () => {
                             <SelectValue placeholder="Select token" />
                         </SelectTrigger>
                         <SelectContent>
-                             {tokens.map(t => <SelectItem key={t.id} value={t.id} disabled={t.id === fromToken}>{t.name}</SelectItem>)}
+                             {tokens.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -287,7 +287,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount || fromToken === toToken} className="w-full sm:w-auto">
+            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto">
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>
@@ -303,32 +303,34 @@ const CrossTokenSwap = () => {
         </div>
 
         {quoteDetails && !loading && (
-          <div className="mt-6 animate-fade-in">
-            <h3 className="text-base font-medium text-muted-foreground mb-3">Swap Details</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
-                <span className="text-muted-foreground">Estimated Output</span>
-                <span className="font-semibold text-foreground">{quoteDetails.outAmount}</span>
+          <div className="mt-6 space-y-6 animate-fade-in">
+              <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-3">Quote Breakdown</h3>
+                  <div className="space-y-2 text-sm border p-4 rounded-lg bg-card">
+                      <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Estimated Output</span>
+                          <span className="font-semibold text-foreground">{quoteDetails.outAmount}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Price Impact</span>
+                          <span className={`font-semibold ${
+                              quoteDetails.priceImpactValue < 0.01
+                                  ? 'text-green-600 dark:text-green-400'
+                                  : quoteDetails.priceImpactValue < 0.03
+                                  ? 'text-yellow-500 dark:text-yellow-400'
+                                  : 'text-red-500 dark:text-red-400'
+                          }`}>
+                              {quoteDetails.priceImpact}
+                          </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Platform Fee</span>
+                          <span className="font-semibold text-foreground">{quoteDetails.platformFee}</span>
+                      </div>
+                  </div>
               </div>
-              <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
-                <span className="text-muted-foreground">Price Impact</span>
-                <span className={`font-semibold ${
-                    quoteDetails.priceImpactValue < 0.01
-                        ? 'text-green-600 dark:text-green-400'
-                        : quoteDetails.priceImpactValue < 0.03
-                        ? 'text-yellow-500 dark:text-yellow-400'
-                        : 'text-red-500 dark:text-red-400'
-                }`}>
-                    {quoteDetails.priceImpact}
-                </span>
-              </div>
-              <div className="flex justify-between items-center bg-muted/50 p-3 rounded-lg">
-                <span className="text-muted-foreground">Platform Fee</span>
-                <span className="font-semibold text-foreground">{quoteDetails.platformFee}</span>
-              </div>
-            </div>
 
-            {quoteResponse && <SwapBreakdownChart quoteResponse={quoteResponse} />}
+              {quoteResponse && <SwapBreakdownChart quoteResponse={quoteResponse} />}
           </div>
         )}
 
@@ -392,6 +394,3 @@ const CrossTokenSwap = () => {
 };
 
 export default CrossTokenSwap;
- 
-
-    

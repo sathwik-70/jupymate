@@ -45,8 +45,8 @@ const SwapBreakdownChart = ({ quoteResponse }: SwapBreakdownChartProps) => {
     };
 
     return (
-        <div className="mt-4">
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Cost Analysis (in %)</h4>
+        <div>
+            <h3 className="text-lg font-semibold text-foreground mb-3">Cost Analysis</h3>
             <div className="rounded-lg border bg-card text-card-foreground p-4">
                 <ChartContainer config={chartConfig} className="min-h-[100px] w-full">
                     <BarChart
