@@ -11,6 +11,7 @@ import InfoCard from '@/components/shared/info-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HeartPulse, Loader2 } from 'lucide-react';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 const PortfolioAnalyzer = () => {
   const { connection } = useConnection();
@@ -37,7 +38,7 @@ const PortfolioAnalyzer = () => {
 
     try {
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-        programId: new (await import('@solana/spl-token')).TOKEN_PROGRAM_ID,
+        programId: TOKEN_PROGRAM_ID,
       });
 
       const knownTokenAccounts = tokenAccounts.value
