@@ -8,11 +8,12 @@ import CrossTokenSwap from '@/components/features/cross-token-swap';
 import McpConfigViewer from '@/components/features/mcp-config-viewer';
 import PortfolioAnalyzer from '@/components/features/portfolio-analyzer';
 import Header from '@/components/layout/header';
+import PriceBreakdownChart from '@/components/features/price-breakdown-chart';
 
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-secondary/20 text-foreground">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-accent/20 text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="text-center mb-12">
@@ -32,6 +33,10 @@ export default function Home() {
 
           <div className="mt-8">
             <PortfolioAnalyzer />
+          </div>
+
+          <div className="mt-8">
+            <PriceBreakdownChart />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
