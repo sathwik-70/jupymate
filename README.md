@@ -91,7 +91,11 @@ The project follows a standard Next.js App Router structure, with a focus on com
 
 ## Deployment
 
-This Next.js application is optimized for deployment on platforms like Vercel and Netlify.
+This Next.js application is optimized for deployment on modern Jamstack platforms like Vercel and Netlify.
+
+### A Note on GitHub Pages
+
+While GitHub Pages is excellent for static sites, it is **not recommended** for this application. Jupymate Navigator relies on server-side AI features (Genkit flows) that require a Node.js environment to run. GitHub Pages does not support this, and deploying there would cause the AI features to fail.
 
 ### Deploying with Vercel (Recommended)
 
@@ -111,8 +115,8 @@ Netlify is another excellent platform for deploying modern web applications.
 2.  Sign up for a [Netlify](https://www.netlify.com/) account and connect your Git provider.
 3.  Click "Add new site" -> "Import an existing project".
 4.  Select your repository.
-5.  Netlify should automatically detect your build settings (Build command: `next build` or `npm run build`, Publish directory: `.next`).
-6.  **Configure Environment Variables**: Before deploying, go to "Site settings" -> "Build & deploy" -> "Environment" and add your `GEMINI_API_KEY`.
+5.  Netlify should automatically detect your build settings. The build command is `next build` and the publish directory is `.next`.
+6.  **Configure Environment Variables**: Before deploying, go to your site's dashboard and navigate to "Site configuration" -> "Build & deploy" -> "Environment variables". Add your `GEMINI_API_KEY` here.
 7.  Click "Deploy site". Netlify will build and deploy your application.
 
 ---
