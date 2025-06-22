@@ -25,21 +25,17 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid gap-8">
+        <div className="flex flex-col gap-8">
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <CrossTokenSwap />
             <McpConfigViewer />
           </div>
 
-          <div className="mt-8">
-            <PortfolioAnalyzer />
-          </div>
+          <PortfolioAnalyzer />
 
-          <div className="mt-8">
-            <PriceBreakdownChart />
-          </div>
+          <PriceBreakdownChart />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
             <ApiEndpoints />
             <SupportedWallets />
             <EcosystemTools />
