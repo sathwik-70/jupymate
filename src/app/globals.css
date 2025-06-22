@@ -40,7 +40,7 @@ body {
     --sidebar-accent: 220 15% 94%;
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-ring: 142 71% 55%;
   }
   .dark {
     --background: 220 15% 10%;
@@ -83,6 +83,9 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(circle at 20% 25%, hsl(var(--primary) / 0.05), transparent 30%),
+                      radial-gradient(circle at 80% 75%, hsl(var(--accent) / 0.05), transparent 30%);
   }
 }

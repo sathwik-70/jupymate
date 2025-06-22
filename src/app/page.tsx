@@ -13,7 +13,7 @@ import PriceBreakdownChart from '@/components/features/price-breakdown-chart';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-primary/5 via-accent/5 to-background text-foreground">
+    <div className="flex flex-col min-h-screen text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="text-center mb-12">
@@ -35,7 +35,7 @@ export default function Home() {
 
           <PriceBreakdownChart />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             <ApiEndpoints />
             <SupportedWallets />
             <EcosystemTools />
