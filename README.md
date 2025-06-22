@@ -6,14 +6,15 @@
 
 ## Introduction
 
-Jupymate Navigator is an advanced developer tool designed to simplify and accelerate the development process on the Solana blockchain, with a specific focus on the Jupiter ecosystem. It provides a comprehensive suite of features, including a real-time cross-token swap visualizer, an AI-powered portfolio analyzer, and interactive documentation for the Jupiter API. Whether you're a seasoned Solana developer or just getting started, Jupymate Navigator is your essential companion for building robust and efficient DeFi applications.
+Jupymate Navigator is an advanced developer tool designed to simplify and accelerate the development process on the Solana blockchain, with a specific focus on the Jupiter ecosystem. It provides a comprehensive suite of features, including a real-time cross-token swap visualizer, an AI-powered portfolio analyzer, and interactive documentation for the Jupiter API, all presented in a polished, visually-driven interface with dynamic gradients and layouts. Whether you're a seasoned Solana developer or just starting out, Jupymate Navigator is your essential companion for building robust and efficient DeFi applications.
 
 ## Key Features
 
--   **Cross-Token Swap Visualizer**: Input any two tokens on Solana and get a real-time quote and route visualization from the Jupiter API. Execute swaps directly through your connected wallet.
+-   **Cross-Token Swap Visualizer**: Input any two tokens on Solana and get a real-time quote, rich cost-breakdown charts, and route visualization from the Jupiter API. Execute swaps directly through your connected wallet.
 -   **AI-Powered Portfolio Analyzer**: Connect your wallet to get an AI-generated "vibe check" of your token holdings, classifying your portfolio as 'Degen', 'Normie', or 'Investor' with witty reasoning. Includes token safety validation based on Jupiter's token lists.
 -   **AI Developer Assistant**: An interactive chatbot trained on the Jupiter API configuration. Ask questions in natural language (e.g., "How do I get a quote for a swap?") and get instant, context-aware answers and code snippets.
 -   **Interactive API Config**: Explore the complete Jupiter Master Control Program (MCP) JSON configuration. Hover over any key to get an AI-generated tooltip explaining its purpose and usage.
+-   **Polished UI/UX**: Features a modern, responsive design with dynamic gradients and a carefully aligned layout, built with Tailwind CSS and ShadCN UI.
 -   **Governance & Ecosystem Insights**: Quick access to essential community resources, including governance analytics dashboards and developer documentation.
 -   **Unified Wallet Support**: Seamlessly connect with popular Solana wallets like Phantom, Solflare, and Backpack.
 
