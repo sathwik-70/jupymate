@@ -18,20 +18,20 @@ const ApiEndpoints = () => {
     >
       <div className="space-y-4 text-sm">
         {apiEndpoints.map((api) => (
-          <div key={api.path} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <div key={api.path} className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Badge variant={api.method === 'GET' ? 'secondary' : 'default'} className="w-14 justify-center">{api.method}</Badge>
-              <code className="font-mono">.../swap/v1{api.path}</code>
+              <Badge variant={api.method === 'GET' ? 'secondary' : 'default'} className="w-14 justify-center flex-shrink-0">{api.method}</Badge>
+              <code className="font-mono whitespace-nowrap">.../swap/v1{api.path}</code>
             </div>
-            <p className="text-muted-foreground text-right sm:text-left pl-16 sm:pl-0">{api.description}</p>
+            <p className="text-muted-foreground text-right">{api.description}</p>
           </div>
         ))}
-         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+         <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-accent/50 text-accent w-14 justify-center">SHIELD</Badge>
-              <code className="font-mono">Token Safety</code>
+              <Badge variant="outline" className="border-accent/50 text-accent w-14 justify-center flex-shrink-0">SHIELD</Badge>
+              <code className="font-mono whitespace-nowrap">Token Safety</code>
             </div>
-             <p className="text-muted-foreground text-right sm:text-left pl-16 sm:pl-0">Integrated validation</p>
+             <p className="text-muted-foreground text-right">Integrated validation</p>
         </div>
       </div>
     </InfoCard>
