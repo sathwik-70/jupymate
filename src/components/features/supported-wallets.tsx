@@ -18,12 +18,17 @@ const SupportedWallets = () => {
         {wallets.map((wallet) => (
           <div key={wallet.name} className="flex flex-col items-center gap-2">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-card p-2 border shadow-md">
-              <img
-                src={wallet.icon}
-                alt={`${wallet.name} logo`}
-                width={32}
-                height={32}
-                className="object-contain"
+              <div
+                style={{
+                  backgroundImage: `url(${wallet.icon})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  width: '32px',
+                  height: '32px',
+                }}
+                role="img"
+                aria-label={`${wallet.name} logo`}
               />
             </div>
             <span className="text-sm font-medium text-foreground">{wallet.name}</span>
