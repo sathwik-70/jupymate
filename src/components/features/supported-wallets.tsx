@@ -18,13 +18,15 @@ const SupportedWallets = () => {
       <div className="grid grid-cols-3 gap-x-4 gap-y-5 text-center">
         {wallets.map((wallet) => (
           <div key={wallet.name} className="flex flex-col items-center gap-2">
-            <Image
-              src={wallet.icon}
-              alt={`${wallet.name} logo`}
-              width={56}
-              height={56}
-              className="rounded-full bg-card p-2 border shadow-md"
-            />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-card p-2 border shadow-md">
+              <Image
+                src={wallet.icon}
+                alt={`${wallet.name} logo`}
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
             <span className="text-sm font-medium text-foreground">{wallet.name}</span>
           </div>
         ))}
