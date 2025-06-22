@@ -124,3 +124,4 @@ Netlify is another excellent platform for deploying modern web applications.
 ## License
 
 This project is distributed under the Open Source License.
+# jupymate
