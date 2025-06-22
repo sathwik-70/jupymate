@@ -13,7 +13,7 @@ interface InfoCardProps {
 
 const InfoCard = ({ title, description, icon: Icon, children, className }: InfoCardProps) => {
   return (
-    <Card className={cn("flex flex-col h-full", className)}>
+    <Card className={cn("flex flex-col h-full bg-gradient-to-tl from-card/95 to-accent/20", className)}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-primary/10 p-2 rounded-lg">
