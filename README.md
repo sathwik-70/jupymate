@@ -41,8 +41,8 @@ Follow these instructions to get a local copy of Jupymate Navigator up and runni
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/your-username/jupymate-navigator.git
-    cd jupymate-navigator
+    git clone https://github.com/sathwik-70/Jupymate.git
+    cd Jupymate
     ```
 
 2.  **Install NPM packages:**
@@ -90,29 +90,29 @@ The project follows a standard Next.js App Router structure, with a focus on com
 
 ## Deployment
 
-This Next.js application is optimized for deployment on platforms that support Node.js environments.
+This Next.js application is optimized for deployment on platforms like Vercel and Netlify.
 
-### Deploying with Firebase App Hosting
+### Deploying with Vercel (Recommended)
 
-This project is pre-configured for deployment on Firebase App Hosting.
+Vercel is the creator of Next.js and provides a seamless deployment experience.
 
-1.  Ensure you have the [Firebase CLI](https://firebase.google.com/docs/cli) installed and are logged in.
-2.  Set up a Firebase project and connect it to your local repository.
-3.  Deploy the application using the following command:
-    ```sh
-    firebase deploy --only apphosting
-    ```
-    The `apphosting.yaml` file in the root directory contains the necessary configuration for the build and run steps.
+1.  Push your code to a GitHub, GitLab, or Bitbucket repository.
+2.  Sign up for a [Vercel](https://vercel.com/) account and connect your Git provider.
+3.  Import your project repository into Vercel. It will be automatically detected as a Next.js app.
+4.  **Configure Environment Variables**: In the Vercel project settings, navigate to the "Environment Variables" section and add your `GEMINI_API_KEY`.
+5.  Click "Deploy". Vercel will build and deploy your application, providing you with a live URL.
 
-### Deploying with Vercel
+### Deploying with Netlify
 
-Vercel is the recommended platform for deploying Next.js applications.
+Netlify is another excellent platform for deploying modern web applications.
 
-1.  Push your code to a GitHub repository.
-2.  Sign up for a [Vercel](https://vercel.com/) account and connect your GitHub.
-3.  Import your project repository into Vercel.
-4.  **Configure Environment Variables**: In the Vercel project settings, add your `GEMINI_API_KEY` as an environment variable.
-5.  Click "Deploy". Vercel will automatically build and deploy your application.
+1.  Push your code to a GitHub, GitLab, or Bitbucket repository.
+2.  Sign up for a [Netlify](https://www.netlify.com/) account and connect your Git provider.
+3.  Click "Add new site" -> "Import an existing project".
+4.  Select your repository.
+5.  Netlify should automatically detect your build settings (Build command: `next build` or `npm run build`, Publish directory: `.next`).
+6.  **Configure Environment Variables**: Before deploying, go to "Site settings" -> "Build & deploy" -> "Environment" and add your `GEMINI_API_KEY`.
+7.  Click "Deploy site". Netlify will build and deploy your application.
 
 ---
 

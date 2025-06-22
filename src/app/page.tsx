@@ -12,11 +12,11 @@ import Header from '@/components/layout/header';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-secondary/20 text-foreground">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-headline text-foreground tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
             Jupymate Navigator
           </h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">

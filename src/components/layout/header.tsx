@@ -17,7 +17,7 @@ const Header = () => {
     <header className="container mx-auto px-4 py-4 border-b">
       <div className="flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
-          <div className="bg-primary/10 p-2 rounded-lg">
+          <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-2 rounded-lg">
             <Rocket className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-2xl font-bold font-headline text-foreground">Jupymate Navigator</h1>
