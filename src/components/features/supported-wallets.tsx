@@ -1,10 +1,13 @@
 import InfoCard from '@/components/shared/info-card';
 import { Wallet } from 'lucide-react';
+import { PhantomIcon } from '@/components/icons/phantom-icon';
+import { SolflareIcon } from '@/components/icons/solflare-icon';
+import { BackpackIcon } from '@/components/icons/backpack-icon';
 
 const wallets = [
-  { name: 'Phantom', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/phantom.svg' },
-  { name: 'Solflare', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/solflare.svg' },
-  { name: 'Backpack', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/backpack.svg' },
+  { name: 'Phantom', icon: PhantomIcon },
+  { name: 'Solflare', icon: SolflareIcon },
+  { name: 'Backpack', icon: BackpackIcon },
 ];
 
 const SupportedWallets = () => {
@@ -18,18 +21,7 @@ const SupportedWallets = () => {
         {wallets.map((wallet) => (
           <div key={wallet.name} className="flex flex-col items-center gap-2">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-card p-2 border shadow-md">
-              <div
-                style={{
-                  backgroundImage: `url(${wallet.icon})`,
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  width: '32px',
-                  height: '32px',
-                }}
-                role="img"
-                aria-label={`${wallet.name} logo`}
-              />
+              <wallet.icon width={32} height={32} />
             </div>
             <span className="text-sm font-medium text-foreground">{wallet.name}</span>
           </div>
