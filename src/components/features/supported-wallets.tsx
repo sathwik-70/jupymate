@@ -1,6 +1,5 @@
 import InfoCard from '@/components/shared/info-card';
 import { Wallet } from 'lucide-react';
-import Image from 'next/image';
 
 const wallets = [
   { name: 'Phantom', icon: 'https://raw.githubusercontent.com/solana-labs/wallet-adapter/master/packages/ui/src/images/phantom.svg' },
@@ -19,7 +18,7 @@ const SupportedWallets = () => {
         {wallets.map((wallet) => (
           <div key={wallet.name} className="flex flex-col items-center gap-2">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-card p-2 border shadow-md">
-              <Image
+              <img
                 src={wallet.icon}
                 alt={`${wallet.name} logo`}
                 width={32}
