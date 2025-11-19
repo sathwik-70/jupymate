@@ -91,7 +91,6 @@ const getJupiterQuoteFlow = ai.defineFlow(
     outputSchema: GetJupiterQuoteOutputSchema,
   },
   async ({ inputMint, outputMint, amount, userPublicKey }) => {
-    // Using v6 of the Jupiter API for better routes and features.
     let url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=50`;
     if (userPublicKey) {
       url += `&userPublicKey=${userPublicKey}`;
@@ -99,21 +98,15 @@ const getJupiterQuoteFlow = ai.defineFlow(
 
     try {
       const response = await fetch(url);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
       const data = await response.json();
-
-      if (!data) {
-        throw new Error('Could not find a route for the swap.');
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
-      
       return data;
       
     } catch (error: any) {
       console.error('Jupiter quote API error:', error);
-      throw new Error(error.message || 'Failed to fetch swap route from Jupiter API.');
+      return { error: error.message || 'Failed to fetch swap route from Jupiter API.' };
     }
   }
 );
@@ -167,7 +160,6 @@ const performSwapFlow = ai.defineFlow(
 
       transaction.sign([userKeypair]);
 
-      // Using a reliable public RPC endpoint. For production apps, a dedicated RPC is recommended.
       const connection = new Connection('https://api.mainnet-beta.solana.com');
       const rawTransaction = transaction.serialize();
       
@@ -236,3 +228,5 @@ ${JSON.stringify(mcpConfig, null, 2)}
     return { response: text };
   }
 );
+
+    

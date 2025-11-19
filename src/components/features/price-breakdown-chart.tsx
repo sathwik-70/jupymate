@@ -56,9 +56,9 @@ const PriceBreakdownChart = () => {
 
   chartConfig.price = { label: "Price (USD)" };
 
-  const prices = priceData.map(p => p.price).filter(p => p > 0);
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 1;
+  const validPrices = priceData.map(p => p.price).filter(p => p > 0 && isFinite(p));
+  const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
+  const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 1;
   const useLogScale = maxPrice / minPrice > 1000;
 
   return (
@@ -140,3 +140,5 @@ const PriceBreakdownChart = () => {
 };
 
 export default PriceBreakdownChart;
+
+    

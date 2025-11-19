@@ -17,7 +17,7 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletSendTransactionError } from '@solana/wallet-adapter-base';
 import { VersionedTransaction } from '@solana/web3.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { tokens, tokenMap, mintMap, type TokenInfo } from '@/config/tokens';
+import { tokens, tokenMap, mintMap } from '@/config/tokens';
 
 
 interface QuoteDetails {
@@ -73,21 +73,21 @@ const CrossTokenSwap = () => {
       });
 
       if (!result || !result.outAmount) {
-        throw new Error('Could not find a route for the swap.');
+        throw new Error(result.error || 'Could not find a route for the swap.');
       }
       setQuoteResponse(result);
-
-      // Correctly extract route from routePlan for v6 API
-      let routeSymbols: string[] = [];
+      
+      const inputSymbol = mintMap.get(result.inputMint)?.id || 'UNK';
+      let routeSymbols: string[] = [inputSymbol];
       if (result.routePlan && result.routePlan.length > 0) {
-          const routeMints = [result.inputMint, ...result.routePlan.flatMap((leg: any) => leg.swapInfo.outputMint ? [leg.swapInfo.outputMint] : [])];
-          routeSymbols = routeMints.map(mint => mintMap.get(mint)?.id || 'UNK');
+          const intermediateMints = result.routePlan.map((leg: any) => leg.swapInfo.outMint);
+          const intermediateSymbols = intermediateMints.map((mint: string) => mintMap.get(mint)?.id || 'UNK');
+          routeSymbols = [inputSymbol, ...intermediateSymbols];
       } else {
-        // Direct swap or same-token swap, visualize as From -> To
-        const fromSymbol = mintMap.get(result.inputMint)?.id || 'UNK';
         const toSymbol = mintMap.get(result.outputMint)?.id || 'UNK';
-        routeSymbols = [fromSymbol, toSymbol];
+        routeSymbols = [inputSymbol, toSymbol];
       }
+
       setRoute(routeSymbols);
 
       const outAmount = (Number(result.outAmount) / (10 ** toTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: toTokenInfo.decimals });
@@ -180,7 +180,6 @@ const CrossTokenSwap = () => {
     setSwapTx(null);
 
     try {
-        // Get swap transaction from Jupiter API
         const swapUrl = 'https://quote-api.jup.ag/v6/swap';
         const swapResponse = await fetch(swapUrl, {
             method: 'POST',
@@ -192,12 +191,12 @@ const CrossTokenSwap = () => {
             })
         });
 
+        const swapResponseJson = await swapResponse.json();
         if (!swapResponse.ok) {
-          const errorData = await swapResponse.json();
-          throw new Error(errorData.error || `Failed to get swap transaction: ${swapResponse.status}`);
+          throw new Error(swapResponseJson.error || `Failed to get swap transaction: ${swapResponse.status}`);
         }
 
-        const { swapTransaction } = await swapResponse.json();
+        const { swapTransaction } = swapResponseJson;
         
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
@@ -393,3 +392,5 @@ const CrossTokenSwap = () => {
 };
 
 export default CrossTokenSwap;
+
+    
