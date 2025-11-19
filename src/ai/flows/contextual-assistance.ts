@@ -1,3 +1,4 @@
+
 // src/ai/flows/contextual-assistance.ts
 'use server';
 
@@ -166,7 +167,8 @@ const performSwapFlow = ai.defineFlow(
 
       transaction.sign([userKeypair]);
 
-      const connection = new Connection('https://jupiter.rpc.solana.com');
+      // Using a reliable public RPC endpoint. For production apps, a dedicated RPC is recommended.
+      const connection = new Connection('https://api.mainnet-beta.solana.com');
       const rawTransaction = transaction.serialize();
       
       const txid = await connection.sendRawTransaction(rawTransaction, {
