@@ -2,9 +2,9 @@ import InfoCard from '@/components/shared/info-card';
 import { BarChart2, Box, ExternalLink, Vote } from 'lucide-react';
 
 const links = [
-  { name: 'Catalytics Governance', purpose: 'Real-time governance analytics', link: 'https://catalytics.pro/jupiter/governance', icon: Vote },
-  { name: 'Catalytics Litterbox', purpose: 'Proposal tracking metrics', link: 'https://catalytics.pro/jupiter/litterbox', icon: Box },
-  { name: 'Flipside Dashboard', purpose: 'Voting & participation analytics', link: 'https://flipsidecrypto.xyz/jupdevrel/jupiter-governance-metrics--xKB0a', icon: BarChart2 },
+  { name: 'Catalytics Governance', purpose: 'Real-time governance analytics dashboard.', link: 'https://catalytics.pro/jupiter/governance', icon: Vote },
+  { name: 'Catalytics Litterbox', purpose: 'Community forum and proposal tracking.', link: 'https://catalytics.pro/jupiter/litterbox', icon: Box },
+  { name: 'DevRel Flipside', purpose: 'In-depth voting and participation analytics.', link: 'https://flipsidecrypto.xyz/jupdevrel/jupiter-governance-metrics--xKB0a', icon: BarChart2 },
 ];
 
 const GovernanceAnalytics = () => {
@@ -12,7 +12,7 @@ const GovernanceAnalytics = () => {
     <InfoCard
       title="Governance Data"
       icon={Vote}
-      description="Analytics from community platforms."
+      description="Explore governance analytics from community platforms."
     >
        <div className="space-y-3">
         {links.map((link) => (

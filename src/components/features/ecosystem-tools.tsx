@@ -1,10 +1,13 @@
 import InfoCard from '@/components/shared/info-card';
-import { Book, Code, ExternalLink, Package } from 'lucide-react';
+import { Book, Code, ExternalLink, Image, Package } from 'lucide-react';
 
 const tools = [
-  { name: 'Official Docs', purpose: 'Developer API documentation', link: 'https://dev.jup.ag/docs/api', icon: Book },
-  { name: 'DevRel GitHub', purpose: 'Sample apps & code examples', link: 'https://github.com/Jupiter-DevRel', icon: Code },
-  { name: 'JupiverseKit', purpose: 'React libraries for swap widgets', link: 'https://www.jupiversekit.xyz', icon: Package },
+  { name: 'Official Dev Docs', purpose: 'The primary documentation for Jupiter developers.', link: 'https://dev.jup.ag', icon: Book },
+  { name: 'Jupiter Terminal', purpose: 'An interface for all of Jupiter\'s swap-related features.', link: 'https://terminal.jup.ag', icon: Code },
+  { name: 'DevRel GitHub', purpose: 'Sample applications and code examples.', link: 'https://github.com/Jupiter-DevRel', icon: Code },
+  { name: 'Jupiverse Kit', purpose: 'A React library for swap widgets.', link: 'https://www.jupiversekit.xyz', icon: Package },
+  { name: 'Unified Wallet Kit', purpose: 'Connect to any wallet on Solana.', link: 'https://unified.jup.ag', icon: Package },
+  { name: 'Branding Guidelines', purpose: 'Official branding and integrator assets.', link: 'https://dev.jup.ag/docs/misc/integrator-guidelines', icon: Image },
 ];
 
 const EcosystemTools = () => {
@@ -12,7 +15,7 @@ const EcosystemTools = () => {
     <InfoCard
       title="Ecosystem Tools"
       icon={Package}
-      description="Resources for building with Jupiter."
+      description="Essential resources and libraries for building with Jupiter."
     >
       <div className="space-y-3">
         {tools.map((tool) => (
