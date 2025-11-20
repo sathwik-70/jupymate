@@ -1,5 +1,5 @@
 import InfoCard from '@/components/shared/info-card';
-import { Book, Code, ExternalLink, Image, Package } from 'lucide-react';
+import { Book, Code, ExternalLink, Image, Package, Link as LinkIcon } from 'lucide-react';
 
 const tools = [
   { name: 'Official Dev Docs', purpose: 'The primary documentation for Jupiter developers.', link: 'https://dev.jup.ag', icon: Book },
@@ -7,7 +7,8 @@ const tools = [
   { name: 'DevRel GitHub', purpose: 'Sample applications and code examples.', link: 'https://github.com/Jupiter-DevRel', icon: Code },
   { name: 'Jupiverse Kit', purpose: 'A React library for swap widgets.', link: 'https://www.jupiversekit.xyz', icon: Package },
   { name: 'Unified Wallet Kit', purpose: 'Connect to any wallet on Solana.', link: 'https://unified.jup.ag', icon: Package },
-  { name: 'Branding Guidelines', purpose: 'Official branding and integrator assets.', link: 'https://dev.jup.ag/docs/misc/integrator-guidelines', icon: Image },
+  { name: 'General Branding', purpose: 'Official Jupiter branding and assets.', link: 'https://dev.jup.ag/docs/misc/integrator-guidelines', icon: Image },
+  { name: 'DevRel Branding', purpose: 'Community and developer-focused assets.', link: 'https://drive.google.com/drive/folders/1lV1jO7uxDGusDSzFMg5ecEb9Sox1JTTR?usp=drive_link', icon: Image },
 ];
 
 const EcosystemTools = () => {

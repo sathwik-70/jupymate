@@ -30,8 +30,20 @@ const PriceBreakdownChart = () => {
           const formattedData = tokenSymbols.map(symbol => ({
             token: symbol,
             price: result.prices[symbol] || 0,
-          })).sort((a,b) => b.price - a.price); // Sort for better visualization
-          setPriceData(formattedData);
+            // Filter out non-positive or invalid prices to prevent chart errors
+          })).filter(p => p.price > 0 && isFinite(p.price)).sort((a,b) => b.price - a.price);
+          
+          if(formattedData.length === 0 && Object.values(result.prices).some(p => p > 0)) {
+             // Handle case where all prices are too small to be displayed without log scale
+             const allData = tokenSymbols.map(symbol => ({
+                token: symbol,
+                price: result.prices[symbol] || 0,
+             })).sort((a,b) => b.price - a.price);
+             setPriceData(allData);
+          } else {
+            setPriceData(formattedData);
+          }
+
         } else {
           throw new Error("Invalid data format from API.");
         }
@@ -108,7 +120,7 @@ const PriceBreakdownChart = () => {
                            axisLine={false}
                            tickFormatter={(value) => value > 1 ? `$${Math.round(Number(value))}` : `$${Number(value).toPrecision(2)}`}
                            scale={useLogScale ? "log" : "auto"}
-                           domain={useLogScale ? [minPrice, 'auto'] : [0, 'auto']}
+                           domain={useLogScale ? [minPrice > 0.000001 ? minPrice : 0.000001, 'auto'] : [0, 'auto']}
                            allowDataOverflow
                         />
                         <ChartTooltip
@@ -135,6 +147,11 @@ const PriceBreakdownChart = () => {
                     </BarChart>
                  </ChartContainer>
             )}
+             {!loading && !error && priceData.length === 0 && (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No price data available for the selected tokens.
+                </div>
+             )}
         </div>
       </CardContent>
     </Card>
@@ -142,5 +159,3 @@ const PriceBreakdownChart = () => {
 };
 
 export default PriceBreakdownChart;
-
-    

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { askDevAssistant, getTooltip } from '@/ai/flows/contextual-assistance';
 import mcpConfigData from '@/config/mcpConfig.json';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,7 +103,7 @@ const AiDevAssistant = () => {
     }
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
@@ -121,7 +121,7 @@ const AiDevAssistant = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [input, loading, messages]);
 
   return (
     <div className="flex flex-col h-full max-h-[488px]">
@@ -192,5 +192,3 @@ const McpConfigViewer = () => {
 };
 
 export default McpConfigViewer;
-
-    

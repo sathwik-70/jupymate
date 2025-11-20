@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getJupiterQuote } from '@/ai/flows/contextual-assistance';
+import { getJupiterQuote, getSwapTransaction } from '@/ai/flows/contextual-assistance';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { ArrowRight, Loader2, Repeat, Wallet } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
 import SwapBreakdownChart from './swap-breakdown-chart';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { WalletSendTransactionError } from '@solana/wallet-adapter-base';
+import { WalletError } from '@solana/wallet-adapter-base';
 import { VersionedTransaction } from '@solana/web3.js';
 import { tokens, tokenMap, mintMap } from '@/config/tokens';
 
@@ -46,7 +46,7 @@ const CrossTokenSwap = () => {
     setIsMounted(true);
   }, []);
 
-  const handleVisualize = async () => {
+  const handleVisualize = useCallback(async () => {
     if (!fromToken || !toToken || !amount) return;
 
     setLoading(true);
@@ -59,8 +59,8 @@ const CrossTokenSwap = () => {
       const fromTokenInfo = tokenMap.get(fromToken);
       const toTokenInfo = tokenMap.get(toToken);
 
-      if(!fromTokenInfo || !toTokenInfo) {
-        throw new Error("Invalid token selection");
+      if (!fromTokenInfo || !toTokenInfo) {
+        throw new Error("Invalid token selection. Please choose valid tokens.");
       }
 
       const amountInLamports = BigInt(Math.floor(Number(amount) * (10 ** fromTokenInfo.decimals)));
@@ -71,7 +71,7 @@ const CrossTokenSwap = () => {
         amount: amountInLamports.toString(),
         userPublicKey: publicKey ? publicKey.toBase58() : undefined,
       });
-
+      
       if (!result || result.error || !result.outAmount) {
         throw new Error(result.error?.message || 'Could not find a route for the swap.');
       }
@@ -79,8 +79,9 @@ const CrossTokenSwap = () => {
       
       const routeSymbols: string[] = [fromToken];
       result.routePlan.forEach((leg: any) => {
+        // Use outMint from swapInfo, which is the correct field in v6
         const outSymbol = mintMap.get(leg.swapInfo.outMint)?.id;
-        if(outSymbol) {
+        if (outSymbol) {
           routeSymbols.push(outSymbol);
         }
       });
@@ -115,7 +116,7 @@ const CrossTokenSwap = () => {
       setLoading(false);
       setVisualizeKey(prev => prev + 1);
     }
-  };
+  }, [fromToken, toToken, amount, publicKey, toast]);
   
   const handleSwapDirection = () => {
       const currentFrom = fromToken;
@@ -123,7 +124,7 @@ const CrossTokenSwap = () => {
       setToToken(currentFrom);
   }
 
-  const handlePerformSwapWithWallet = async () => {
+  const handlePerformSwapWithWallet = useCallback(async () => {
     if (!publicKey || !quoteResponse || !sendTransaction) {
         toast({
             variant: "destructive",
@@ -137,33 +138,24 @@ const CrossTokenSwap = () => {
     setSwapTx(null);
 
     try {
-        const swapUrl = 'https://quote-api.jup.ag/v6/swap';
-        const swapApiResponse = await fetch(swapUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                quoteResponse,
-                userPublicKey: publicKey.toBase58(),
-                wrapAndUnwrapSol: true,
-            })
+        const { swapTransaction, lastValidBlockHeight } = await getSwapTransaction({
+            quoteResponse,
+            userPublicKey: publicKey.toBase58(),
         });
-        
-        const swapJson = await swapApiResponse.json();
-
-        if (!swapApiResponse.ok) {
-          throw new Error(swapJson.error || `Failed to get swap transaction: ${swapApiResponse.statusText}`);
-        }
-
-        const { swapTransaction } = swapJson;
         
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
 
         const txid = await sendTransaction(transaction, connection);
 
-        const confirmation = await connection.confirmTransaction(txid, 'confirmed');
-        if (confirmation.value.err) {
-            throw new Error(`Transaction failed: ${confirmation.value.err}`);
+        const { value: status } = await connection.confirmTransaction({
+          signature: txid,
+          blockhash: quoteResponse.blockhash,
+          lastValidBlockHeight
+        }, 'confirmed');
+
+        if (status.err) {
+            throw new Error(`Transaction failed: ${status.err}`);
         }
 
         setSwapTx(txid);
@@ -177,7 +169,7 @@ const CrossTokenSwap = () => {
         });
 
     } catch (e: any) {
-        if (e instanceof WalletSendTransactionError && e.message.includes('User rejected the request')) {
+        if (e instanceof WalletError && e.message.includes('User rejected the request')) {
             toast({
                 variant: "destructive",
                 title: "Swap Cancelled",
@@ -193,7 +185,7 @@ const CrossTokenSwap = () => {
     } finally {
         setSwapping(false);
     }
-  }
+  }, [publicKey, quoteResponse, sendTransaction, connection, toast]);
 
   if (!isMounted) {
     return (
@@ -321,7 +313,7 @@ const CrossTokenSwap = () => {
             </p>
             <Button 
                 onClick={handlePerformSwapWithWallet} 
-                disabled={loading || swapping || !quoteResponse || !publicKey}
+                disabled={!isMounted || loading || swapping || !quoteResponse || !publicKey}
                 className="w-full"
             >
                 {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}

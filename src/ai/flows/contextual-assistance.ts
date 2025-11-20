@@ -112,30 +112,29 @@ const getJupiterQuoteFlow = ai.defineFlow(
 
 // Perform Swap Flow
 const PerformSwapInputSchema = z.object({
-  userPrivateKey: z.string().describe("The user's private key as a base58 string."),
+  userPublicKey: z.string().describe("The user's public key as a base58 string."),
   quoteResponse: z.any().describe("The quote response object from the getJupiterQuote flow."),
 });
 export type PerformSwapInput = z.infer<typeof PerformSwapInputSchema>;
 
 const PerformSwapOutputSchema = z.object({
-  transactionId: z.string().describe("The signature of the successful swap transaction."),
+  swapTransaction: z.string().describe("The base64 encoded versioned transaction."),
+  lastValidBlockHeight: z.number().describe("The last valid block height for the transaction.")
 });
 export type PerformSwapOutput = z.infer<typeof PerformSwapOutputSchema>;
 
-export async function performSwap(input: PerformSwapInput): Promise<PerformSwapOutput> {
-  return performSwapFlow(input);
+export async function getSwapTransaction(input: PerformSwapInput): Promise<PerformSwapOutput> {
+  return getSwapTransactionFlow(input);
 }
 
-const performSwapFlow = ai.defineFlow(
+const getSwapTransactionFlow = ai.defineFlow(
   {
-    name: 'performSwapFlow',
+    name: 'getSwapTransactionFlow',
     inputSchema: PerformSwapInputSchema,
     outputSchema: PerformSwapOutputSchema,
   },
-  async ({ userPrivateKey, quoteResponse }) => {
+  async ({ userPublicKey, quoteResponse }) => {
     try {
-      const userKeypair = Keypair.fromSecretKey(bs58.decode(userPrivateKey));
-
       const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
         method: 'POST',
         headers: {
@@ -143,7 +142,7 @@ const performSwapFlow = ai.defineFlow(
         },
         body: JSON.stringify({
           quoteResponse,
-          userPublicKey: userKeypair.publicKey.toBase58(),
+          userPublicKey: userPublicKey,
           wrapAndUnwrapSol: true,
         }),
       });
@@ -152,32 +151,16 @@ const performSwapFlow = ai.defineFlow(
         const errorData = await swapResponse.json();
         throw new Error(errorData.error || `Failed to get swap transaction: ${swapResponse.status}`);
       }
-
-      const { swapTransaction } = await swapResponse.json();
-      const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
-      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-
-      transaction.sign([userKeypair]);
-
-      const connection = new Connection('https://api.mainnet-beta.solana.com');
-      const rawTransaction = transaction.serialize();
       
-      const txid = await connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true,
-        maxRetries: 2,
-      });
-
-      const confirmation = await connection.confirmTransaction(txid, 'confirmed');
-
-      if (confirmation.value.err) {
-        throw new Error(`Transaction failed: ${confirmation.value.err}`);
-      }
-
-      return { transactionId: txid };
+      const data = await swapResponse.json();
+      return {
+        swapTransaction: data.swapTransaction,
+        lastValidBlockHeight: data.lastValidBlockHeight
+      };
 
     } catch (error: any) {
-      console.error('Swap execution error:', error);
-      throw new Error(error.message || 'Failed to execute swap.');
+      console.error('Swap transaction fetch error:', error);
+      throw new Error(error.message || 'Failed to get swap transaction.');
     }
   }
 );
