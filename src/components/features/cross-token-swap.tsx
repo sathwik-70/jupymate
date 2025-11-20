@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { getJupiterQuote } from '@/ai/flows/contextual-assistance';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowRight, Key, Loader2, Repeat, Wallet } from 'lucide-react';
+import { ArrowRight, Loader2, Repeat, Wallet } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
 import SwapBreakdownChart from './swap-breakdown-chart';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletSendTransactionError } from '@solana/wallet-adapter-base';
 import { VersionedTransaction } from '@solana/web3.js';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { tokens, tokenMap, mintMap } from '@/config/tokens';
 
 interface QuoteDetails {
@@ -33,6 +31,7 @@ const CrossTokenSwap = () => {
   const [route, setRoute] = useState<string[]>([]);
   const [visualizeKey, setVisualizeKey] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
   
   const { connection } = useConnection();
@@ -43,6 +42,9 @@ const CrossTokenSwap = () => {
   const [swapping, setSwapping] = useState(false);
   const [swapTx, setSwapTx] = useState<string | null>(null);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleVisualize = async () => {
     if (!fromToken || !toToken || !amount) return;
@@ -71,11 +73,11 @@ const CrossTokenSwap = () => {
       });
 
       if (!result || result.error || !result.outAmount) {
-        throw new Error(result.error || 'Could not find a route for the swap.');
+        throw new Error(result.error?.message || 'Could not find a route for the swap.');
       }
       setQuoteResponse(result);
       
-      const routeSymbols: string[] = [fromTokenInfo.id];
+      const routeSymbols: string[] = [fromToken];
       result.routePlan.forEach((leg: any) => {
         const outSymbol = mintMap.get(leg.swapInfo.outMint)?.id;
         if(outSymbol) {
@@ -146,12 +148,13 @@ const CrossTokenSwap = () => {
             })
         });
         
+        const swapJson = await swapApiResponse.json();
+
         if (!swapApiResponse.ok) {
-          const errorData = await swapApiResponse.json();
-          throw new Error(errorData.error || `Failed to get swap transaction: ${swapApiResponse.statusText}`);
+          throw new Error(swapJson.error || `Failed to get swap transaction: ${swapApiResponse.statusText}`);
         }
 
-        const { swapTransaction } = await swapApiResponse.json();
+        const { swapTransaction } = swapJson;
         
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
@@ -190,6 +193,28 @@ const CrossTokenSwap = () => {
     } finally {
         setSwapping(false);
     }
+  }
+
+  if (!isMounted) {
+    return (
+      <Card className="h-full flex flex-col">
+        <CardHeader>
+          <CardTitle>
+              <div className="flex items-center gap-2 font-headline text-2xl">
+                  <Repeat className="w-6 h-6 text-primary"/>
+                  Cross-Token Swap
+              </div>
+          </CardTitle>
+          <CardDescription>
+            Visualize and execute token swaps on Solana using the Jupiter API.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-grow flex flex-col items-center justify-center">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-muted-foreground mt-2">Loading...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -315,5 +340,3 @@ const CrossTokenSwap = () => {
 };
 
 export default CrossTokenSwap;
-
-    

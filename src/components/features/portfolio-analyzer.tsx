@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useToast } from '@/hooks/use-toast';
 import { analyzePortfolio } from '@/ai/flows/portfolio-analyzer';
-import type { AnalyzePortfolioInput, AnalyzePortfolioOutput } from '@/ai/flows/portfolio-analyzer';
+import type { AnalyzePortfolioOutput } from '@/ai/flows/portfolio-analyzer';
 import { mintMap } from '@/config/tokens';
 import InfoCard from '@/components/shared/info-card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,11 @@ const PortfolioAnalyzer = () => {
 
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalyzePortfolioOutput | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleAnalyze = async () => {
     if (!publicKey) {
@@ -150,7 +155,7 @@ const PortfolioAnalyzer = () => {
           </div>
         )}
 
-        <Button onClick={handleAnalyze} disabled={loading || !publicKey} className="w-full">
+        <Button onClick={handleAnalyze} disabled={!isMounted || loading || !publicKey} className="w-full">
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <HeartPulse className="mr-2 h-4 w-4" />}
           Analyze My Wallet
         </Button>
