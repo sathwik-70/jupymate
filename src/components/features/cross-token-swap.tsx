@@ -19,7 +19,6 @@ import { VersionedTransaction } from '@solana/web3.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { tokens, tokenMap, mintMap } from '@/config/tokens';
 
-
 interface QuoteDetails {
   outAmount: string;
   priceImpact: string;
@@ -78,14 +77,17 @@ const CrossTokenSwap = () => {
       setQuoteResponse(result);
       
       const inputSymbol = mintMap.get(result.inputMint)?.id || 'UNK';
+      
       let routeSymbols: string[] = [inputSymbol];
       if (result.routePlan && result.routePlan.length > 0) {
           const intermediateMints = result.routePlan.map((leg: any) => leg.swapInfo.outMint);
           const intermediateSymbols = intermediateMints.map((mint: string) => mintMap.get(mint)?.id || 'UNK');
+          // The last symbol in intermediateSymbols should be the final output token
           routeSymbols = [inputSymbol, ...intermediateSymbols];
       } else {
-        const toSymbol = mintMap.get(result.outputMint)?.id || 'UNK';
-        routeSymbols = [inputSymbol, toSymbol];
+          // Direct swap
+          const toSymbol = mintMap.get(result.outputMint)?.id || 'UNK';
+          routeSymbols = [inputSymbol, toSymbol];
       }
 
       setRoute(routeSymbols);
@@ -111,7 +113,7 @@ const CrossTokenSwap = () => {
     } catch(e: any) {
        toast({
         variant: "destructive",
-        title: "Error fetching route",
+        title: "Error Fetching Route",
         description: e.message || "Could not retrieve a swap route from Jupiter API.",
       });
     } finally {
@@ -144,6 +146,10 @@ const CrossTokenSwap = () => {
             userPrivateKey: privateKey,
             quoteResponse,
         });
+
+        if (!result || !result.transactionId) {
+          throw new Error("Failed to execute swap.");
+        }
 
         setSwapTx(result.transactionId);
         toast({
@@ -190,13 +196,13 @@ const CrossTokenSwap = () => {
                 wrapAndUnwrapSol: true,
             })
         });
-
-        const swapResponseJson = await swapResponse.json();
+        
         if (!swapResponse.ok) {
-          throw new Error(swapResponseJson.error || `Failed to get swap transaction: ${swapResponse.status}`);
+          const errorData = await swapResponse.json();
+          throw new Error(errorData.error || `Failed to get swap transaction: ${swapResponse.status}`);
         }
 
-        const { swapTransaction } = swapResponseJson;
+        const { swapTransaction } = await swapResponse.json();
         
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
@@ -240,9 +246,11 @@ const CrossTokenSwap = () => {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-2">
-            <Repeat className="w-6 h-6 text-primary"/>
-            Cross-Token Swap
+        <CardTitle>
+            <div className="flex items-center gap-2 font-headline text-2xl">
+                <Repeat className="w-6 h-6 text-primary"/>
+                Cross-Token Swap
+            </div>
         </CardTitle>
         <CardDescription>
           Visualize and execute token swaps on Solana using the Jupiter API.

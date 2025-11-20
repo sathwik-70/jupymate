@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -165,9 +166,11 @@ const McpConfigViewer = () => {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-2">
-            <Bot className="w-6 h-6 text-primary"/>
-            AI Developer Tools
+        <CardTitle>
+            <div className="font-headline text-2xl flex items-center gap-2">
+                <Bot className="w-6 h-6 text-primary"/>
+                AI Developer Tools
+            </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -189,3 +192,5 @@ const McpConfigViewer = () => {
 };
 
 export default McpConfigViewer;
+
+    

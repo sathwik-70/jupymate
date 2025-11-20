@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { LucideIcon } from 'lucide-react';
 import type React from 'react';
@@ -13,13 +14,15 @@ interface InfoCardProps {
 
 const InfoCard = ({ title, description, icon: Icon, children, className }: InfoCardProps) => {
   return (
-    <Card className={cn("flex flex-col h-full bg-gradient-to-tl from-card/95 to-accent/20", className)}>
+    <Card className={cn("flex flex-col h-full", className)}>
       <CardHeader>
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-primary/10 p-2 rounded-lg">
             <Icon className="w-5 h-5 text-primary" />
           </div>
-          <CardTitle className="font-headline text-xl">{title}</CardTitle>
+          <CardTitle>
+            <div className="font-headline text-xl">{title}</div>
+          </CardTitle>
         </div>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
@@ -30,3 +33,5 @@ const InfoCard = ({ title, description, icon: Icon, children, className }: InfoC
   );
 };
 export default InfoCard;
+
+    

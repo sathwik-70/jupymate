@@ -57,16 +57,18 @@ const PriceBreakdownChart = () => {
   chartConfig.price = { label: "Price (USD)" };
 
   const validPrices = priceData.map(p => p.price).filter(p => p > 0 && isFinite(p));
-  const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 0;
-  const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 1;
+  const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 1;
+  const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0.00001;
   const useLogScale = maxPrice / minPrice > 1000;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-primary"/>
-            Live Token Prices
+        <CardTitle>
+            <div className="font-headline text-2xl flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-primary"/>
+                Live Token Prices
+            </div>
         </CardTitle>
         <CardDescription>
             Current market prices from Jupiter API for key Solana tokens.
@@ -106,7 +108,7 @@ const PriceBreakdownChart = () => {
                            axisLine={false}
                            tickFormatter={(value) => value > 1 ? `$${Math.round(Number(value))}` : `$${Number(value).toPrecision(2)}`}
                            scale={useLogScale ? "log" : "auto"}
-                           domain={useLogScale ? [0.00001, 'auto'] : [0, 'auto']}
+                           domain={useLogScale ? [minPrice, maxPrice] : [0, 'auto']}
                            allowDataOverflow
                         />
                         <ChartTooltip
