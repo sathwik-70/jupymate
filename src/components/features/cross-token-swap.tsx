@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getJupiterQuote, performSwap } from '@/ai/flows/contextual-assistance';
+import { getJupiterQuote } from '@/ai/flows/contextual-assistance';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,16 +31,15 @@ const CrossTokenSwap = () => {
   const [toToken, setToToken] = useState('JUP');
   const [amount, setAmount] = useState('10000');
   const [route, setRoute] = useState<string[]>([]);
-  const [key, setKey] = useState(0);
+  const [visualizeKey, setVisualizeKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, sendTransaction, wallet } = useWallet();
 
   const [quoteResponse, setQuoteResponse] = useState<any | null>(null);
   const [quoteDetails, setQuoteDetails] = useState<QuoteDetails | null>(null);
-  const [privateKey, setPrivateKey] = useState('');
   const [swapping, setSwapping] = useState(false);
   const [swapTx, setSwapTx] = useState<string | null>(null);
 
@@ -71,25 +70,19 @@ const CrossTokenSwap = () => {
         userPublicKey: publicKey ? publicKey.toBase58() : undefined,
       });
 
-      if (!result || !result.outAmount) {
+      if (!result || result.error || !result.outAmount) {
         throw new Error(result.error || 'Could not find a route for the swap.');
       }
       setQuoteResponse(result);
       
-      const inputSymbol = mintMap.get(result.inputMint)?.id || 'UNK';
+      const routeSymbols: string[] = [fromTokenInfo.id];
+      result.routePlan.forEach((leg: any) => {
+        const outSymbol = mintMap.get(leg.swapInfo.outMint)?.id;
+        if(outSymbol) {
+          routeSymbols.push(outSymbol);
+        }
+      });
       
-      let routeSymbols: string[] = [inputSymbol];
-      if (result.routePlan && result.routePlan.length > 0) {
-          const intermediateMints = result.routePlan.map((leg: any) => leg.swapInfo.outMint);
-          const intermediateSymbols = intermediateMints.map((mint: string) => mintMap.get(mint)?.id || 'UNK');
-          // The last symbol in intermediateSymbols should be the final output token
-          routeSymbols = [inputSymbol, ...intermediateSymbols];
-      } else {
-          // Direct swap
-          const toSymbol = mintMap.get(result.outputMint)?.id || 'UNK';
-          routeSymbols = [inputSymbol, toSymbol];
-      }
-
       setRoute(routeSymbols);
 
       const outAmount = (Number(result.outAmount) / (10 ** toTokenInfo.decimals)).toLocaleString(undefined, { maximumFractionDigits: toTokenInfo.decimals });
@@ -118,7 +111,7 @@ const CrossTokenSwap = () => {
       });
     } finally {
       setLoading(false);
-      setKey(prev => prev + 1);
+      setVisualizeKey(prev => prev + 1);
     }
   };
   
@@ -126,50 +119,6 @@ const CrossTokenSwap = () => {
       const currentFrom = fromToken;
       setFromToken(toToken);
       setToToken(currentFrom);
-  }
-
-  const handlePerformSwapWithApiKey = async () => {
-    if (!privateKey || !quoteResponse) {
-        toast({
-            variant: "destructive",
-            title: "Missing Information",
-            description: "Please provide your private key and visualize a route first.",
-        });
-        return;
-    }
-
-    setSwapping(true);
-    setSwapTx(null);
-
-    try {
-        const result = await performSwap({
-            userPrivateKey: privateKey,
-            quoteResponse,
-        });
-
-        if (!result || !result.transactionId) {
-          throw new Error("Failed to execute swap.");
-        }
-
-        setSwapTx(result.transactionId);
-        toast({
-            title: "Swap Successful!",
-            description: (
-                <p>
-                    Transaction ID: <a href={`https://solscan.io/tx/${result.transactionId}`} target="_blank" rel="noopener noreferrer" className="underline">{result.transactionId.slice(0, 10)}...</a>
-                </p>
-            ),
-        });
-
-    } catch (e: any) {
-        toast({
-            variant: "destructive",
-            title: "Swap Failed",
-            description: e.message || "An error occurred during the swap.",
-        });
-    } finally {
-        setSwapping(false);
-    }
   }
 
   const handlePerformSwapWithWallet = async () => {
@@ -187,7 +136,7 @@ const CrossTokenSwap = () => {
 
     try {
         const swapUrl = 'https://quote-api.jup.ag/v6/swap';
-        const swapResponse = await fetch(swapUrl, {
+        const swapApiResponse = await fetch(swapUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -197,12 +146,12 @@ const CrossTokenSwap = () => {
             })
         });
         
-        if (!swapResponse.ok) {
-          const errorData = await swapResponse.json();
-          throw new Error(errorData.error || `Failed to get swap transaction: ${swapResponse.status}`);
+        if (!swapApiResponse.ok) {
+          const errorData = await swapApiResponse.json();
+          throw new Error(errorData.error || `Failed to get swap transaction: ${swapApiResponse.statusText}`);
         }
 
-        const { swapTransaction } = await swapResponse.json();
+        const { swapTransaction } = await swapApiResponse.json();
         
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
@@ -303,7 +252,7 @@ const CrossTokenSwap = () => {
             <Label className="text-sm font-medium">Visualized Route</Label>
             <div className="mt-2 p-4 min-h-[84px] flex-grow flex items-center justify-center bg-muted/50 rounded-lg border border-dashed">
                 {loading && <Loader2 className="h-8 w-8 text-primary animate-spin" />}
-                {!loading && route.length > 0 && <SwapRouteVisualizer route={route} key={key} />}
+                {!loading && route.length > 0 && <SwapRouteVisualizer route={route} key={visualizeKey} />}
                 {!loading && !route.length && <div className="text-center text-muted-foreground animate-fade-in">Click "Visualize Route" to get started.</div>}
             </div>
         </div>
@@ -341,53 +290,19 @@ const CrossTokenSwap = () => {
         )}
 
         <div className="mt-6 border-t pt-6">
-            <Tabs defaultValue="wallet" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="wallet">Wallet Swap</TabsTrigger>
-                    <TabsTrigger value="apikey">API Key Swap</TabsTrigger>
-                </TabsList>
-                <TabsContent value="wallet" className="mt-4 space-y-4">
-                    <p className="text-sm text-muted-foreground text-center">
-                        Execute the swap securely using your connected wallet.
-                    </p>
-                    <Button 
-                        onClick={handlePerformSwapWithWallet} 
-                        disabled={loading || swapping || !quoteResponse || !publicKey}
-                        className="w-full"
-                    >
-                        {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}
-                        {swapping ? 'Executing Swap...' : `Execute with Wallet`}
-                    </Button>
-                </TabsContent>
-                <TabsContent value="apikey" className="mt-4 space-y-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="privateKey">API Key (Base58 Private Key)</Label>
-                        <Input 
-                            id="privateKey" 
-                            type="password" 
-                            value={privateKey} 
-                            onChange={(e) => setPrivateKey(e.target.value)}
-                            placeholder="Enter a burner wallet's private key"
-                            disabled={loading || swapping}
-                        />
-                    </div>
-                    <Alert variant="destructive">
-                      <Key className="h-4 w-4" />
-                      <AlertTitle>Security Warning</AlertTitle>
-                      <AlertDescription>
-                        Never share your private key with a site you don't trust. This is for development purposes only.
-                      </AlertDescription>
-                    </Alert>
-                    <Button 
-                        onClick={handlePerformSwapWithApiKey} 
-                        disabled={loading || swapping || !quoteResponse || !privateKey.trim()}
-                        className="w-full"
-                    >
-                        {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Key className="mr-2 h-4 w-4" />}
-                        {swapping ? 'Executing Swap...' : 'Execute with API Key'}
-                    </Button>
-                </TabsContent>
-            </Tabs>
+            <h3 className="text-lg font-semibold text-foreground mb-3">Execute Swap</h3>
+             <p className="text-sm text-muted-foreground mb-4 text-center">
+                Execute the swap securely using your connected wallet.
+            </p>
+            <Button 
+                onClick={handlePerformSwapWithWallet} 
+                disabled={loading || swapping || !quoteResponse || !publicKey}
+                className="w-full"
+            >
+                {swapping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}
+                {swapping ? 'Executing Swap...' : `Execute with ${wallet?.adapter.name || 'Wallet'}`}
+            </Button>
+            
              {swapTx && (
                 <div className="mt-4 text-center text-sm text-green-600 dark:text-green-400 font-medium animate-fade-in">
                     <p>Swap successful! <a href={`https://solscan.io/tx/${swapTx}`} target="_blank" rel="noopener noreferrer" className="font-medium underline">View on Solscan</a></p>

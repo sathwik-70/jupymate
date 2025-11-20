@@ -83,7 +83,7 @@ const McpConfigViewerInternal = () => {
       <CardDescription className="mb-4">
           Hover over any key in the JSON configuration below to get an AI-generated explanation of its purpose.
       </CardDescription>
-      <div className="bg-muted/50 p-4 rounded-lg text-sm font-mono whitespace-pre-wrap break-all overflow-x-auto max-h-[420px] overflow-y-auto">
+      <div className="bg-muted/50 p-4 rounded-lg text-sm font-mono whitespace-pre-wrap break-all max-h-[420px] overflow-x-auto overflow-y-auto">
         <JsonRenderer data={mcpConfigData} fullConfig={mcpConfigData} />
       </div>
     </>
@@ -128,7 +128,7 @@ const AiDevAssistant = () => {
       <CardDescription className="mb-4">
         Ask the AI assistant about the Jupiter API, endpoints, or how to use them.
       </CardDescription>
-      <ScrollArea className="flex-grow  bg-muted/50 rounded-lg p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-grow bg-muted/50 rounded-lg p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>

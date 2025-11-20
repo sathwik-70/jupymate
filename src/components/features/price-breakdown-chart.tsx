@@ -59,7 +59,7 @@ const PriceBreakdownChart = () => {
   const validPrices = priceData.map(p => p.price).filter(p => p > 0 && isFinite(p));
   const maxPrice = validPrices.length > 0 ? Math.max(...validPrices) : 1;
   const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0.00001;
-  const useLogScale = maxPrice / minPrice > 1000;
+  const useLogScale = maxPrice > 0 && minPrice > 0 && maxPrice / minPrice > 1000;
 
   return (
     <Card>
@@ -108,7 +108,7 @@ const PriceBreakdownChart = () => {
                            axisLine={false}
                            tickFormatter={(value) => value > 1 ? `$${Math.round(Number(value))}` : `$${Number(value).toPrecision(2)}`}
                            scale={useLogScale ? "log" : "auto"}
-                           domain={useLogScale ? [minPrice, maxPrice] : [0, 'auto']}
+                           domain={useLogScale ? [minPrice, 'auto'] : [0, 'auto']}
                            allowDataOverflow
                         />
                         <ChartTooltip

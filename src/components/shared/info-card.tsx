@@ -20,9 +20,7 @@ const InfoCard = ({ title, description, icon: Icon, children, className }: InfoC
           <div className="bg-primary/10 p-2 rounded-lg">
             <Icon className="w-5 h-5 text-primary" />
           </div>
-          <CardTitle>
-            <div className="font-headline text-xl">{title}</div>
-          </CardTitle>
+          <CardTitle as="div" className="font-headline text-xl">{title}</CardTitle>
         </div>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
