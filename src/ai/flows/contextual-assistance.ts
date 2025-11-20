@@ -1,4 +1,3 @@
-
 // src/ai/flows/contextual-assistance.ts
 'use server';
 
@@ -228,5 +227,3 @@ ${JSON.stringify(mcpConfig, null, 2)}
     return { response: text };
   }
 );
-
-    
