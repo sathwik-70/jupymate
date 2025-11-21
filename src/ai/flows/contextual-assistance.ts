@@ -24,8 +24,6 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import mcpConfig from '@/config/mcpConfig.json';
-import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
-import bs58 from 'bs58';
 
 // Tooltip Flow
 const GetTooltipInputSchema = z.object({
@@ -57,7 +55,7 @@ const getTooltipFlow = ai.defineFlow(
       prompt: `You are an AI assistant that helps developers understand configuration parameters.
       Based on the following MCP configuration, generate a concise and helpful tooltip for the given configuration parameter.
       MCP Configuration:
-      {{mcpConfig}}
+      {{{mcpConfig}}}
       Configuration Parameter:
       {{configParameter}}
       Tooltip:`,
@@ -153,6 +151,11 @@ const getSwapTransactionFlow = ai.defineFlow(
       }
       
       const data = await swapResponse.json();
+      
+      if(!data.swapTransaction) {
+          throw new Error('Failed to get swap transaction from API response.');
+      }
+
       return {
         swapTransaction: data.swapTransaction,
         lastValidBlockHeight: data.lastValidBlockHeight

@@ -79,7 +79,6 @@ const CrossTokenSwap = () => {
       
       const routeSymbols: string[] = [fromToken];
       result.routePlan.forEach((leg: any) => {
-        // Use outMint from swapInfo, which is the correct field in v6
         const outSymbol = mintMap.get(leg.swapInfo.outMint)?.id;
         if (outSymbol) {
           routeSymbols.push(outSymbol);
@@ -148,15 +147,11 @@ const CrossTokenSwap = () => {
 
         const txid = await sendTransaction(transaction, connection);
 
-        const { value: status } = await connection.confirmTransaction({
+        await connection.confirmTransaction({
           signature: txid,
-          blockhash: quoteResponse.blockhash,
+          blockhash: quoteResponse.context.blockhash,
           lastValidBlockHeight
         }, 'confirmed');
-
-        if (status.err) {
-            throw new Error(`Transaction failed: ${status.err}`);
-        }
 
         setSwapTx(txid);
         toast({
@@ -192,10 +187,10 @@ const CrossTokenSwap = () => {
       <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle>
-              <div className="flex items-center gap-2 font-headline text-2xl">
-                  <Repeat className="w-6 h-6 text-primary"/>
-                  Cross-Token Swap
-              </div>
+            <div className="flex items-center gap-2 font-headline text-2xl">
+                <Repeat className="w-6 h-6 text-primary"/>
+                Cross-Token Swap
+            </div>
           </CardTitle>
           <CardDescription>
             Visualize and execute token swaps on Solana using the Jupiter API.

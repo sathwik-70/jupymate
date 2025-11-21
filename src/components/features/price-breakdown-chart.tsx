@@ -30,19 +30,9 @@ const PriceBreakdownChart = () => {
           const formattedData = tokenSymbols.map(symbol => ({
             token: symbol,
             price: result.prices[symbol] || 0,
-            // Filter out non-positive or invalid prices to prevent chart errors
           })).filter(p => p.price > 0 && isFinite(p.price)).sort((a,b) => b.price - a.price);
           
-          if(formattedData.length === 0 && Object.values(result.prices).some(p => p > 0)) {
-             // Handle case where all prices are too small to be displayed without log scale
-             const allData = tokenSymbols.map(symbol => ({
-                token: symbol,
-                price: result.prices[symbol] || 0,
-             })).sort((a,b) => b.price - a.price);
-             setPriceData(allData);
-          } else {
-            setPriceData(formattedData);
-          }
+          setPriceData(formattedData);
 
         } else {
           throw new Error("Invalid data format from API.");
@@ -61,7 +51,7 @@ const PriceBreakdownChart = () => {
   const chartConfig = priceData.reduce((acc, item, index) => {
     acc[item.token] = {
       label: item.token,
-      color: `hsl(var(--chart-${index + 1}))`,
+      color: `hsl(var(--chart-${(index % 5) + 1}))`,
     };
     return acc;
   }, {} as ChartConfig & { price: { label: string } });
@@ -127,15 +117,8 @@ const PriceBreakdownChart = () => {
                             cursor={false}
                             content={<ChartTooltipContent
                                 indicator="dot"
-                                formatter={(value, name, props) => {
-                                    return (
-                                        <div className="flex flex-col items-start">
-                                            <span className="font-semibold text-foreground">{props.payload.token}</span>
-                                            <span className="text-muted-foreground">
-                                                ${typeof value === 'number' ? value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6}) : value}
-                                            </span>
-                                        </div>
-                                    );
+                                formatter={(value) => {
+                                    return `$${typeof value === 'number' ? value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6}) : value}`
                                 }}
                             />}
                         />

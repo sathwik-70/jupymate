@@ -96,6 +96,11 @@ const AiDevAssistant = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -122,6 +127,10 @@ const AiDevAssistant = () => {
       setLoading(false);
     }
   }, [input, loading, messages]);
+  
+  if (!isMounted) {
+    return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 text-primary animate-spin" /></div>;
+  }
 
   return (
     <div className="flex flex-col h-full max-h-[488px]">
