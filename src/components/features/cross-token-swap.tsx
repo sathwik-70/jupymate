@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, Loader2, Repeat, Wallet } from 'lucide-react';
 import SwapRouteVisualizer from './swap-route-visualizer';
-import SwapBreakdownChart from './swap-breakdown-chart';
+import SwapAnalyticsCharts from './swap-breakdown-chart';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletError } from '@solana/wallet-adapter-base';
 import { VersionedTransaction } from '@solana/web3.js';
@@ -47,7 +47,7 @@ const CrossTokenSwap = () => {
   }, []);
 
   const handleVisualize = useCallback(async () => {
-    if (!fromToken || !toToken || !amount) return;
+    if (!isMounted || !publicKey || !fromToken || !toToken || !amount) return;
 
     setLoading(true);
     setRoute([]);
@@ -69,18 +69,18 @@ const CrossTokenSwap = () => {
         inputMint: fromTokenInfo.mint,
         outputMint: toTokenInfo.mint,
         amount: amountInLamports.toString(),
-        userPublicKey: publicKey ? publicKey.toBase58() : undefined,
+        userPublicKey: publicKey.toBase58(),
       });
       
       if (!result || result.error || !result.outAmount) {
-        throw new Error(result.error?.message || 'Could not find a route for the swap.');
+        throw new Error(result.error || 'Could not find a route for the swap.');
       }
       setQuoteResponse(result);
       
       const routeSymbols: string[] = [fromToken];
       result.routePlan.forEach((leg: any) => {
         const outSymbol = mintMap.get(leg.swapInfo.outMint)?.id;
-        if (outSymbol) {
+        if (outSymbol && outSymbol !== routeSymbols[routeSymbols.length - 1]) {
           routeSymbols.push(outSymbol);
         }
       });
@@ -115,7 +115,7 @@ const CrossTokenSwap = () => {
       setLoading(false);
       setVisualizeKey(prev => prev + 1);
     }
-  }, [fromToken, toToken, amount, publicKey, toast]);
+  }, [fromToken, toToken, amount, publicKey, toast, isMounted]);
   
   const handleSwapDirection = () => {
       const currentFrom = fromToken;
@@ -141,6 +141,10 @@ const CrossTokenSwap = () => {
             quoteResponse,
             userPublicKey: publicKey.toBase58(),
         });
+
+        if (!swapTransaction) {
+          throw new Error("Failed to retrieve swap transaction from the API.");
+        }
         
         const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
@@ -254,7 +258,7 @@ const CrossTokenSwap = () => {
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" disabled={loading || swapping}/>
             </div>
             
-            <Button onClick={handleVisualize} disabled={loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto">
+            <Button onClick={handleVisualize} disabled={!publicKey || loading || swapping || !fromToken || !toToken || !amount} className="w-full sm:w-auto" title={!publicKey ? "Connect your wallet to visualize a route" : "Visualize Route"}>
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                 {loading ? 'Visualizing...' : 'Visualize Route'}
             </Button>
@@ -265,7 +269,7 @@ const CrossTokenSwap = () => {
             <div className="mt-2 p-4 min-h-[84px] flex-grow flex items-center justify-center bg-muted/50 rounded-lg border border-dashed">
                 {loading && <Loader2 className="h-8 w-8 text-primary animate-spin" />}
                 {!loading && route.length > 0 && <SwapRouteVisualizer route={route} key={visualizeKey} />}
-                {!loading && !route.length && <div className="text-center text-muted-foreground animate-fade-in">Click "Visualize Route" to get started.</div>}
+                {!loading && !route.length && <div className="text-center text-muted-foreground animate-fade-in">{publicKey ? 'Click "Visualize Route" to get started.' : 'Please connect your wallet to continue.'}</div>}
             </div>
         </div>
 
@@ -297,7 +301,7 @@ const CrossTokenSwap = () => {
                   </div>
               </div>
 
-              {quoteResponse && <SwapBreakdownChart quoteResponse={quoteResponse} />}
+              {quoteResponse && <SwapAnalyticsCharts quoteResponse={quoteResponse} />}
           </div>
         )}
 
@@ -327,3 +331,5 @@ const CrossTokenSwap = () => {
 };
 
 export default CrossTokenSwap;
+
+    
